@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow, isPast, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getCurrentClass, getLevelProgress } from '../lib/rpg';
+import { DailyMissions } from '../components/DailyMissions';
 
 export function Dashboard() {
   const { user, cycle, reviews } = useStudyStore();
@@ -122,101 +123,108 @@ export function Dashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Next Subject Card */}
-        <div className="tour-next-subject bg-white rounded-3xl p-8 border border-zinc-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/20 to-fuchsia-400/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-          
-          <h2 className="text-xl font-bold text-zinc-900 mb-6 relative">Próximo no Ciclo</h2>
-          
-          {nextSubject ? (
-            <div className="relative">
-              <div 
-                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 text-white font-bold text-xl shadow-lg"
-                style={{ backgroundColor: nextSubject.color }}
-              >
-                {nextSubject.name.charAt(0).toUpperCase()}
-              </div>
-              <h3 className="text-2xl font-black text-zinc-900 mb-2">{nextSubject.name}</h3>
-              <p className="text-zinc-500 mb-8 flex items-center gap-2">
-                <Clock size={18} />
-                Meta de {nextSubject.durationMinutes} minutos
-                {nextSubject.weight && (
-                  <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded-md font-semibold text-xs">
-                    Peso {nextSubject.weight}
-                  </span>
-                )}
-              </p>
-              
-              <button
-                onClick={() => navigate('/session')}
-                className="w-full sm:w-auto px-8 py-4 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 active:scale-95"
-              >
-                <Play fill="currentColor" size={20} />
-                Iniciar Sessão
-              </button>
-            </div>
-          ) : (
-            <div className="relative text-center py-8">
-              <p className="text-zinc-500 mb-6">Nenhum ciclo ativo no momento.</p>
-              <button
-                onClick={() => navigate('/config')}
-                className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold transition-all active:scale-95"
-              >
-                Configurar Ciclo
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Urgent Reviews */}
-        <div className="bg-white rounded-3xl p-8 border border-zinc-200 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-zinc-900">Revisões Urgentes</h2>
-            <span className="px-3 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-full">
-              {urgentReviews.length} atrasadas
-            </span>
-          </div>
-
-          <div className="space-y-4">
-            {urgentReviews.slice(0, 4).map((review) => {
-              const subject = cycle.subjects.find((s) => s.id === review.subjectId);
-              return (
-                <div key={review.id} className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 border border-zinc-100 hover:border-zinc-300 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div 
-                      className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold"
-                      style={{ backgroundColor: subject?.color || '#94a3b8' }}
-                    >
-                      {subject?.name?.charAt(0).toUpperCase() || '?'}
-                    </div>
-                    <div>
-                      <p className="font-bold text-zinc-900">{subject?.name || 'Tópico Removido'}</p>
-                      <p className="text-sm text-zinc-500 truncate max-w-[200px]">{review.topic}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-medium text-red-500 mb-1">
-                      {formatDistanceToNow(parseISO(review.dueDate), { addSuffix: true, locale: ptBR })}
-                    </p>
-                    <button 
-                      onClick={() => navigate('/reviews')}
-                      className="text-sm font-bold text-violet-600 hover:text-violet-700"
-                    >
-                      Revisar
-                    </button>
-                  </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 space-y-8">
+          {/* Next Subject Card */}
+          <div className="tour-next-subject bg-white rounded-3xl p-8 border border-zinc-200 shadow-sm relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/20 to-fuchsia-400/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            
+            <h2 className="text-xl font-bold text-zinc-900 mb-6 relative">Próximo no Ciclo</h2>
+            
+            {nextSubject ? (
+              <div className="relative">
+                <div 
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 text-white font-bold text-xl shadow-lg"
+                  style={{ backgroundColor: nextSubject.color }}
+                >
+                  {nextSubject.name.charAt(0).toUpperCase()}
                 </div>
-              );
-            })}
-
-            {urgentReviews.length === 0 && (
-              <div className="text-center py-12">
-                <BookOpenCheck className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
-                <p className="text-zinc-500 font-medium">Tudo em dia! Você não tem revisões atrasadas.</p>
+                <h3 className="text-2xl font-black text-zinc-900 mb-2">{nextSubject.name}</h3>
+                <p className="text-zinc-500 mb-8 flex items-center gap-2">
+                  <Clock size={18} />
+                  Meta de {nextSubject.durationMinutes} minutos
+                  {nextSubject.weight && (
+                    <span className="bg-violet-100 text-violet-700 px-2 py-0.5 rounded-md font-semibold text-xs">
+                      Peso {nextSubject.weight}
+                    </span>
+                  )}
+                </p>
+                
+                <button
+                  onClick={() => navigate('/session')}
+                  className="w-full sm:w-auto px-8 py-4 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 active:scale-95"
+                >
+                  <Play fill="currentColor" size={20} />
+                  Iniciar Sessão
+                </button>
+              </div>
+            ) : (
+              <div className="relative text-center py-8">
+                <p className="text-zinc-500 mb-6">Nenhum ciclo ativo no momento.</p>
+                <button
+                  onClick={() => navigate('/config')}
+                  className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold transition-all active:scale-95"
+                >
+                  Configurar Ciclo
+                </button>
               </div>
             )}
           </div>
+
+          {/* Urgent Reviews */}
+          <div className="bg-white rounded-3xl p-8 border border-zinc-200 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-zinc-900">Revisões Urgentes</h2>
+              <span className="px-3 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-full">
+                {urgentReviews.length} atrasadas
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              {urgentReviews.slice(0, 4).map((review) => {
+                const subject = cycle.subjects.find((s) => s.id === review.subjectId);
+                return (
+                  <div key={review.id} className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 border border-zinc-100 hover:border-zinc-300 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div 
+                        className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold"
+                        style={{ backgroundColor: subject?.color || '#94a3b8' }}
+                      >
+                        {subject?.name?.charAt(0).toUpperCase() || '?'}
+                      </div>
+                      <div>
+                        <p className="font-bold text-zinc-900">{subject?.name || 'Tópico Removido'}</p>
+                        <p className="text-sm text-zinc-500 truncate max-w-[200px]">{review.topic}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xs font-medium text-red-500 mb-1">
+                        {formatDistanceToNow(parseISO(review.dueDate), { addSuffix: true, locale: ptBR })}
+                      </p>
+                      <button 
+                        onClick={() => navigate('/reviews')}
+                        className="text-sm font-bold text-violet-600 hover:text-violet-700"
+                      >
+                        Revisar
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {urgentReviews.length === 0 && (
+                <div className="text-center py-12">
+                  <BookOpenCheck className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
+                  <p className="text-zinc-500 font-medium">Tudo em dia! Você não tem revisões atrasadas.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Daily Missions Sidebar */}
+        <div className="lg:col-span-1">
+          <DailyMissions />
         </div>
       </div>
     </div>
