@@ -6,6 +6,7 @@ import { StudySession } from './pages/StudySession';
 import { Reviews } from './pages/Reviews';
 import { Analytics } from './pages/Analytics';
 import { Auth } from './pages/Auth';
+import { Guide } from './pages/Guide';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { supabase } from './lib/supabase';
 import { cn } from './lib/utils';
@@ -38,6 +39,7 @@ function Layout({ children }: { children: React.ReactNode }) {
               <Link to="/config" className={navLinkClass('/config')}>Configurar</Link>
               <Link to="/reviews" className={navLinkClass('/reviews')}>Revisões</Link>
               <Link to="/analytics" className={navLinkClass('/analytics')}>Estatísticas</Link>
+              <Link to="/guide" className={navLinkClass('/guide')}>Guia</Link>
             </div>
             <button
               onClick={handleLogout}
@@ -69,6 +71,7 @@ function App() {
         <Route path="/session" element={<ProtectedRoute><Layout><StudySession /></Layout></ProtectedRoute>} />
         <Route path="/reviews" element={<ProtectedRoute><Layout><Reviews /></Layout></ProtectedRoute>} />
         <Route path="/analytics" element={<ProtectedRoute><Layout><Analytics /></Layout></ProtectedRoute>} />
+        <Route path="/guide" element={<ProtectedRoute><Layout><Guide /></Layout></ProtectedRoute>} />
       </Routes>
     </Router>
   );
