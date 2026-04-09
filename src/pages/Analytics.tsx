@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useStudyStore } from '../store/useStudyStore';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { format, subDays, startOfDay, endOfDay, parseISO } from 'date-fns';
+import { format, subDays, startOfDay, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 
@@ -106,7 +106,7 @@ export function Analytics() {
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: '#71717a', fontSize: 12, textTransform: 'capitalize' }} 
+                  tick={{ fill: '#71717a', fontSize: 12 }} 
                   dy={10}
                 />
                 <YAxis 
@@ -117,7 +117,7 @@ export function Analytics() {
                 <Tooltip 
                   cursor={{ fill: '#f4f4f5' }}
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  formatter={(value: number) => [`${value} minutos`, 'Tempo']}
+                  formatter={(value: any) => [`${value} minutos`, 'Tempo']}
                   labelFormatter={(label) => `Dia: ${label}`}
                 />
                 <Bar 
@@ -161,13 +161,13 @@ export function Analytics() {
                   </Pie>
                   <Tooltip 
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    formatter={(value: number) => [`${value} minutos`, 'Tempo']}
+                    formatter={(value: any) => [`${value} minutos`, 'Tempo']}
                   />
                   <Legend 
                     verticalAlign="bottom" 
                     height={36}
                     iconType="circle"
-                    formatter={(value, entry: any) => <span className="text-zinc-600 font-medium ml-1">{value}</span>}
+                    formatter={(value) => <span className="text-zinc-600 font-medium ml-1">{value}</span>}
                   />
                 </PieChart>
               </ResponsiveContainer>
