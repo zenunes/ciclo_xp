@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useStudyStore } from '../store/useStudyStore';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import { format, subDays, startOfDay, parseISO } from 'date-fns';
+import { format, subDays, startOfDay, parseISO, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { BarChart3, PieChart as PieChartIcon } from 'lucide-react';
+import { BarChart3, PieChart as PieChartIcon, Activity } from 'lucide-react';
+import { Heatmap } from '../components/Heatmap';
 
 export function Analytics() {
   const { cycle } = useStudyStore();
@@ -16,14 +17,14 @@ export function Analytics() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      // Buscar o histórico dos últimos 7 dias
-      const sevenDaysAgo = startOfDay(subDays(new Date(), 6));
+      // Buscar o histórico dos últimos 180 dias
+      const pastDays = startOfDay(subDays(new Date(), 180));
       
       const { data } = await supabase
         .from('study_history')
         .select('*')
         .eq('user_id', user.id)
-        .gte('created_at', format(sevenDaysAgo, "yyyy-MM-dd'T'HH:mm:ssXXX"));
+        .gte('created_at', format(pastDays, "yyyy-MM-dd'T'HH:mm:ssXXX"));
 
       if (data) {
         setHistoryData(data);
@@ -42,6 +43,10 @@ export function Analytics() {
     );
   }
 
+  // Filtrar apenas os últimos 7 dias para os gráficos de barra e pizza
+  const sevenDaysAgo = startOfDay(subDays(new Date(), 6));
+  const last7DaysData = historyData.filter(entry => parseISO(entry.created_at) >= sevenDaysAgo);
+
   // 1. Processar dados para o Gráfico de Barras (Tempo estudado por dia - Últimos 7 dias)
   const last7Days = Array.from({ length: 7 }).map((_, i) => {
     const d = subDays(new Date(), 6 - i);
@@ -53,7 +58,7 @@ export function Analytics() {
     };
   });
 
-  historyData.forEach((entry) => {
+  last7DaysData.forEach((entry) => {
     const entryDate = format(parseISO(entry.created_at), 'yyyy-MM-dd');
     const dayObj = last7Days.find(d => d.fullDate === entryDate);
     if (dayObj) {
@@ -64,7 +69,7 @@ export function Analytics() {
   // 2. Processar dados para o Gráfico de Pizza (Distribuição do tempo por matéria)
   const subjectDistribution: Record<string, { name: string, value: number, color: string }> = {};
 
-  historyData.forEach((entry) => {
+  last7DaysData.forEach((entry) => {
     const subject = cycle.subjects.find(s => s.id === entry.subject_id);
     if (subject) {
       if (!subjectDistribution[subject.id]) {
@@ -79,6 +84,20 @@ export function Analytics() {
   });
 
   const pieData = Object.values(subjectDistribution).sort((a, b) => b.value - a.value);
+
+  // 3. Processar dados para o Mapa de Calor (Heatmap) - Últimos 180 dias
+  const heatmapData = historyData.map(entry => ({
+    date: parseISO(entry.created_at),
+    minutos: entry.duration_minutes,
+  })).reduce((acc, curr) => {
+    const existing = acc.find(item => isSameDay(item.date, curr.date));
+    if (existing) {
+      existing.minutos += curr.minutos;
+    } else {
+      acc.push({ ...curr });
+    }
+    return acc;
+  }, [] as { date: Date; minutos: number }[]);
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -180,6 +199,18 @@ export function Analytics() {
           </div>
         </div>
 
+      </div>
+
+      {/* Mapa de Calor (Heatmap) */}
+      <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/15 text-blue-600 dark:text-blue-300 flex items-center justify-center">
+            <Activity size={20} />
+          </div>
+          <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Frequência de Estudos (Últimos 6 meses)</h2>
+        </div>
+        
+        <Heatmap data={heatmapData} />
       </div>
     </div>
   );
