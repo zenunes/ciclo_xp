@@ -1,5 +1,6 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { LogOut, Moon, Sun } from 'lucide-react';
 import { Dashboard } from './pages/Dashboard';
 import { CycleConfig } from './pages/CycleConfig';
 import { StudySession } from './pages/StudySession';
@@ -12,10 +13,12 @@ import { supabase } from './lib/supabase';
 import { cn } from './lib/utils';
 import { OnboardingTour } from './components/OnboardingTour';
 import { LevelUpModal } from './components/LevelUpModal';
+import { applyTheme, getPreferredTheme, setStoredTheme, type Theme } from './lib/theme';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [theme, setTheme] = useState<Theme>('light');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -26,15 +29,28 @@ function Layout({ children }: { children: React.ReactNode }) {
     cn(
       "font-medium transition-colors",
       location.pathname === path 
-        ? "text-violet-600 border-b-2 border-violet-600 pb-1" 
-        : "text-zinc-600 hover:text-violet-600"
+        ? "text-violet-600 border-b-2 border-violet-600 pb-1 dark:text-violet-400 dark:border-violet-400" 
+        : "text-zinc-600 hover:text-violet-600 dark:text-zinc-300 dark:hover:text-violet-400"
     );
 
+  useEffect(() => {
+    const initial = getPreferredTheme();
+    setTheme(initial);
+    applyTheme(initial);
+  }, []);
+
+  const toggleTheme = () => {
+    const next: Theme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    applyTheme(next);
+    setStoredTheme(next);
+  };
+
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col">
       <OnboardingTour />
       <LevelUpModal />
-      <header className="bg-white border-b border-zinc-200 sticky top-0 z-10">
+      <header className="bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h1 className="text-xl font-bold text-violet-600">Ciclos XP</h1>
           <nav className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-6">
@@ -45,13 +61,22 @@ function Layout({ children }: { children: React.ReactNode }) {
               <Link to="/analytics" className={navLinkClass('/analytics')}>Estatísticas</Link>
               <Link to="/guide" className={navLinkClass('/guide')}>Guia</Link>
             </div>
-            <button
-              onClick={handleLogout}
-              className="p-2 text-zinc-400 hover:text-red-500 transition-colors flex-shrink-0"
-              title="Sair"
-            >
-              <LogOut size={20} />
-            </button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={toggleTheme}
+                className="p-2 text-zinc-400 hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+                title={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
+              >
+                {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              <button
+                onClick={handleLogout}
+                className="p-2 text-zinc-400 hover:text-red-500 transition-colors"
+                title="Sair"
+              >
+                <LogOut size={20} />
+              </button>
+            </div>
           </nav>
         </div>
       </header>
