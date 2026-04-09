@@ -1,8 +1,9 @@
 import { useStudyStore } from '../store/useStudyStore';
-import { Play, Trophy, Clock, BookOpenCheck, Flame } from 'lucide-react';
+import { Play, Clock, BookOpenCheck, Flame } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow, isPast, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { getCurrentClass, getLevelProgress } from '../lib/rpg';
 
 export function Dashboard() {
   const { user, cycle, reviews } = useStudyStore();
@@ -12,15 +13,69 @@ export function Dashboard() {
   const pendingReviews = reviews.filter((r) => !r.completed);
   const urgentReviews = pendingReviews.filter((r) => isPast(parseISO(r.dueDate)));
 
+  const currentClass = getCurrentClass(user.level);
+  const progress = getLevelProgress(user.xp, user.level);
+  const ClassIcon = currentClass.icon;
+
+  const colorStyles = {
+    zinc: 'from-zinc-800 to-zinc-900 border-zinc-700',
+    blue: 'from-blue-800 to-blue-900 border-blue-700',
+    orange: 'from-orange-800 to-orange-900 border-orange-700',
+    violet: 'from-violet-800 to-violet-900 border-violet-700',
+    amber: 'from-amber-800 to-amber-900 border-amber-700',
+  };
+
+  const progressColors = {
+    zinc: 'bg-zinc-400',
+    blue: 'bg-blue-400',
+    orange: 'bg-orange-400',
+    violet: 'bg-violet-400',
+    amber: 'bg-amber-400',
+  };
+
+  const glowColors = {
+    zinc: 'from-zinc-400/20',
+    blue: 'from-blue-400/20',
+    orange: 'from-orange-400/20',
+    violet: 'from-violet-400/20',
+    amber: 'from-amber-400/20',
+  };
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-black text-zinc-900">Olá, Estudante! 👋</h1>
-        <p className="text-zinc-500 mt-2">Aqui está o seu progresso de hoje.</p>
+      {/* RPG Character Card */}
+      <div className={`relative overflow-hidden rounded-3xl p-8 border shadow-lg bg-gradient-to-br ${colorStyles[currentClass.color]}`}>
+        <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${glowColors[currentClass.color]} to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`} />
+        
+        <div className="relative flex flex-col md:flex-row items-center gap-6">
+          <div className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/20">
+            <ClassIcon size={40} className="text-white" />
+          </div>
+          
+          <div className="flex-1 w-full text-center md:text-left">
+            <p className="text-white/60 font-medium mb-1">Classe Atual</p>
+            <h1 className="text-3xl font-black text-white mb-2">
+              {currentClass.name} <span className="text-white/40 text-2xl font-medium">Lv. {user.level}</span>
+            </h1>
+            
+            <div className="mt-4">
+              <div className="flex justify-between text-sm font-medium text-white/80 mb-2">
+                <span>{user.xp} XP Total</span>
+                <span>Faltam {progress.xpRemaining} XP para o Nível {user.level + 1}</span>
+              </div>
+              <div className="w-full h-3 bg-black/40 rounded-full overflow-hidden border border-white/10">
+                <div 
+                  className={`h-full rounded-full transition-all duration-1000 ${progressColors[currentClass.color]}`}
+                  style={{ width: `${progress.progressPercentage}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 bg-orange-100 text-orange-500 rounded-xl flex items-center justify-center">
             <Flame size={24} />
@@ -28,16 +83,6 @@ export function Dashboard() {
           <div>
             <p className="text-sm font-medium text-zinc-500">Ofensiva</p>
             <p className="text-2xl font-bold text-zinc-900">{user.currentStreak || 0} dias</p>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center">
-            <Trophy size={24} />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-zinc-500">Nível Atual</p>
-            <p className="text-2xl font-bold text-zinc-900">{user.level}</p>
           </div>
         </div>
         
