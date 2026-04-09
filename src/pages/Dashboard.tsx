@@ -23,6 +23,11 @@ export function Dashboard() {
     orange: 'from-orange-800 to-orange-900 border-orange-700',
     violet: 'from-violet-800 to-violet-900 border-violet-700',
     amber: 'from-amber-800 to-amber-900 border-amber-700',
+    emerald: 'from-emerald-800 to-emerald-900 border-emerald-700',
+    red: 'from-red-800 to-red-900 border-red-700',
+    cyan: 'from-cyan-800 to-cyan-900 border-cyan-700',
+    fuchsia: 'from-fuchsia-800 to-fuchsia-900 border-fuchsia-700',
+    rose: 'from-rose-800 to-rose-900 border-rose-700',
   };
 
   const progressColors = {
@@ -31,6 +36,11 @@ export function Dashboard() {
     orange: 'bg-orange-400',
     violet: 'bg-violet-400',
     amber: 'bg-amber-400',
+    emerald: 'bg-emerald-400',
+    red: 'bg-red-400',
+    cyan: 'bg-cyan-400',
+    fuchsia: 'bg-fuchsia-400',
+    rose: 'bg-rose-400',
   };
 
   const glowColors = {
@@ -39,6 +49,11 @@ export function Dashboard() {
     orange: 'from-orange-400/20',
     violet: 'from-violet-400/20',
     amber: 'from-amber-400/20',
+    emerald: 'from-emerald-400/20',
+    red: 'from-red-400/20',
+    cyan: 'from-cyan-400/20',
+    fuchsia: 'from-fuchsia-400/20',
+    rose: 'from-rose-400/20',
   };
 
   return (

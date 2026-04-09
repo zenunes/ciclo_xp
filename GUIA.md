@@ -27,7 +27,12 @@ Conforme você acumula XP, o seu **Nível** aumenta. A cada 10 níveis alcançad
 - 🛡️ **Escudeiro (Lv. 10 a 19)**: Você já tem o básico, agora precisa de consistência e resistência.
 - ⚔️ **Guerreiro (Lv. 20 a 29)**: O estudo já faz parte da sua rotina de combate diário.
 - 👑 **Cavaleiro (Lv. 30 a 39)**: Respeitado e com uma carga enorme de conhecimento acumulado.
-- ✨ **Mestre (Lv. 40+)**: Você alcançou o topo! A disciplina é absoluta.
+- ✨ **Mestre (Lv. 40 a 49)**: A disciplina é absoluta, você domina o seu próprio tempo.
+- 🏅 **Grão-Mestre (Lv. 50 a 59)**: Um verdadeiro especialista, guiando outros através do exemplo.
+- 🔥 **Herói (Lv. 60 a 69)**: Você é implacável, sua ofensiva nunca apaga.
+- ⭐ **Lenda (Lv. 70 a 79)**: Seu nome é sussurrado nos corredores acadêmicos.
+- ⚡ **Mítico (Lv. 80 a 89)**: O conhecimento flui de você como energia pura.
+- ☀️ **Divino (Lv. 90+)**: Você alcançou o topo supremo! Uma verdadeira entidade do saber.
 
 **Como ganhar XP**:
 - Terminando uma Sessão de Estudo (o XP é calculado com base no tempo estudado).
