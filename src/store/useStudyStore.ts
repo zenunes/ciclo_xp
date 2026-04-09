@@ -18,6 +18,17 @@ export interface Review {
   completed: boolean;
 }
 
+export interface DailyQuest {
+  id: string;
+  title: string;
+  type: 'study_time' | 'reviews' | 'sessions';
+  target: number;
+  progress: number;
+  xpReward: number;
+  completed: boolean;
+  date: string;
+}
+
 interface StudyState {
   user: {
     xp: number;
@@ -37,11 +48,13 @@ interface StudyState {
     currentIndex: number;
   };
   reviews: Review[];
+  dailyQuests: DailyQuest[];
   isLoading: boolean;
   forceTour: boolean;
   
   // Actions
   fetchUserData: () => Promise<void>;
+  checkDailyQuests: () => void;
   addSubject: (subject: Omit<Subject, 'id'>) => Promise<void>;
   removeSubject: (id: string) => Promise<void>;
   updateSubject: (id: string, subject: Partial<Subject>) => Promise<void>;
@@ -56,6 +69,52 @@ interface StudyState {
 }
 
 const calculateLevel = (xp: number) => Math.floor(Math.sqrt(xp / 100)) + 1;
+
+const generateDailyQuests = (): DailyQuest[] => {
+  const today = formatISO(new Date(), { representation: 'date' });
+  const pool: Omit<DailyQuest, 'id' | 'progress' | 'completed' | 'date'>[] = [
+    { title: 'Estude por 30 minutos', type: 'study_time', target: 30, xpReward: 50 },
+    { title: 'Estude por 60 minutos', type: 'study_time', target: 60, xpReward: 100 },
+    { title: 'Faça 2 revisões', type: 'reviews', target: 2, xpReward: 40 },
+    { title: 'Faça 5 revisões', type: 'reviews', target: 5, xpReward: 80 },
+    { title: 'Complete 2 sessões', type: 'sessions', target: 2, xpReward: 40 },
+    { title: 'Complete 4 sessões', type: 'sessions', target: 4, xpReward: 80 },
+  ];
+
+  // Escolhe 3 quests aleatórias
+  const shuffled = pool.sort(() => 0.5 - Math.random());
+  const selected = shuffled.slice(0, 3);
+
+  return selected.map((q, i) => ({
+    ...q,
+    id: `quest-${today}-${i}`,
+    progress: 0,
+    completed: false,
+    date: today,
+  }));
+};
+
+const loadDailyQuests = (): DailyQuest[] => {
+  try {
+    const saved = localStorage.getItem('ciclos_xp_quests');
+    if (saved) {
+      const parsed: DailyQuest[] = JSON.parse(saved);
+      const today = formatISO(new Date(), { representation: 'date' });
+      // Se for de outro dia, ignora e gera novas
+      if (parsed.length > 0 && parsed[0].date === today) {
+        return parsed;
+      }
+    }
+  } catch (e) {}
+  
+  const newQuests = generateDailyQuests();
+  localStorage.setItem('ciclos_xp_quests', JSON.stringify(newQuests));
+  return newQuests;
+};
+
+const saveDailyQuests = (quests: DailyQuest[]) => {
+  localStorage.setItem('ciclos_xp_quests', JSON.stringify(quests));
+};
 
 export const useStudyStore = create<StudyState>()((set, get) => ({
   user: {
@@ -72,8 +131,13 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     currentIndex: 0,
   },
   reviews: [],
+  dailyQuests: loadDailyQuests(),
   isLoading: true,
   forceTour: false,
+
+  checkDailyQuests: () => {
+    set({ dailyQuests: loadDailyQuests() });
+  },
 
   fetchUserData: async () => {
     set({ isLoading: true });
@@ -231,8 +295,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
 
     const currentSubject = state.cycle.subjects[state.cycle.currentIndex];
     const weight = currentSubject.weight || 1;
-    const newXp = state.user.xp + (durationMinutes * 10 * weight);
-    const newLevel = calculateLevel(newXp);
+    let baseNewXp = state.user.xp + (durationMinutes * 10 * weight);
     
     // Calcular Ofensiva (Streaks)
     const today = new Date();
@@ -250,6 +313,27 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     } else {
       newStreak = 1;
     }
+
+    // Processar Daily Quests
+    let extraXp = 0;
+    const newQuests = state.dailyQuests.map((q) => {
+      if (q.completed) return q;
+      
+      let newProgress = q.progress;
+      if (q.type === 'study_time') newProgress += durationMinutes;
+      if (q.type === 'sessions') newProgress += 1;
+      
+      if (newProgress >= q.target) {
+        extraXp += q.xpReward;
+        return { ...q, progress: q.target, completed: true };
+      }
+      return { ...q, progress: newProgress };
+    });
+    
+    saveDailyQuests(newQuests);
+    
+    const newXp = baseNewXp + extraXp;
+    const newLevel = calculateLevel(newXp);
     
     // Atualizar perfil na nuvem
     await supabase.from('profiles').update({ 
@@ -302,6 +386,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
         levelUpData: didLevelUp ? { show: true, oldLevel: state.user.level, newLevel } : state.levelUpData,
         cycle: { ...state.cycle, currentIndex: nextIndex },
         reviews: newReviews,
+        dailyQuests: newQuests,
       };
     });
   },
@@ -328,8 +413,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
       xpReward = 80; // Difícil = Mais XP (incentivo)
     }
 
-    const newXp = state.user.xp + xpReward;
-    const newLevel = calculateLevel(newXp);
+    let baseNewXp = state.user.xp + xpReward;
 
     // Calcular Ofensiva (Streaks)
     const today = new Date();
@@ -346,6 +430,26 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     } else {
       newStreak = 1;
     }
+
+    // Processar Daily Quests
+    let extraXp = 0;
+    const newQuests = state.dailyQuests.map((q) => {
+      if (q.completed) return q;
+      
+      let newProgress = q.progress;
+      if (q.type === 'reviews') newProgress += 1;
+      
+      if (newProgress >= q.target) {
+        extraXp += q.xpReward;
+        return { ...q, progress: q.target, completed: true };
+      }
+      return { ...q, progress: newProgress };
+    });
+    
+    saveDailyQuests(newQuests);
+
+    const newXp = baseNewXp + extraXp;
+    const newLevel = calculateLevel(newXp);
 
     // 1. Atualizar Perfil
     await supabase.from('profiles').update({ 
@@ -402,6 +506,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
         },
         levelUpData: didLevelUp ? { show: true, oldLevel: state.user.level, newLevel } : state.levelUpData,
         reviews: updatedReviews,
+        dailyQuests: newQuests,
       };
     });
   },
