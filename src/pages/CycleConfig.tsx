@@ -22,7 +22,12 @@ export function CycleConfig() {
   const { cycle, addSubject, removeSubject, startCycle, stopCycle } = useStudyStore();
   const navigate = useNavigate();
   const [isAdding, setIsAdding] = useState(false);
-  const [newSubject, setNewSubject] = useState({
+  const [newSubject, setNewSubject] = useState<{
+    name: string;
+    color: string;
+    durationMinutes: number | string;
+    weight: number | string;
+  }>({
     name: '',
     color: COLORS[0],
     durationMinutes: 60,
@@ -43,7 +48,14 @@ export function CycleConfig() {
     e.preventDefault();
     if (!newSubject.name.trim()) return;
 
-    addSubject(newSubject);
+    const duration = typeof newSubject.durationMinutes === 'number' ? newSubject.durationMinutes : parseInt(newSubject.durationMinutes as string) || 60;
+    const weight = typeof newSubject.weight === 'number' ? newSubject.weight : parseInt(newSubject.weight as string) || 1;
+
+    addSubject({
+      ...newSubject,
+      durationMinutes: duration,
+      weight: weight
+    });
     setNewSubject({ name: '', color: COLORS[Math.floor(Math.random() * COLORS.length)], durationMinutes: 60, weight: 1 });
     setIsAdding(false);
   };
@@ -139,7 +151,7 @@ export function CycleConfig() {
                   min="1"
                   required
                   value={newSubject.durationMinutes}
-                  onChange={(e) => setNewSubject({ ...newSubject, durationMinutes: parseInt(e.target.value) || 0 })}
+                  onChange={(e) => setNewSubject({ ...newSubject, durationMinutes: e.target.value === '' ? '' : Number(e.target.value) })}
                   className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                 />
               </div>
@@ -153,7 +165,7 @@ export function CycleConfig() {
                   step="1"
                   required
                   value={newSubject.weight}
-                  onChange={(e) => setNewSubject({ ...newSubject, weight: parseInt(e.target.value) || 1 })}
+                  onChange={(e) => setNewSubject({ ...newSubject, weight: e.target.value === '' ? '' : Number(e.target.value) })}
                   className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                 />
               </div>
