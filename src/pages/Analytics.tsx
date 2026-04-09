@@ -83,19 +83,19 @@ export function Analytics() {
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
       <div>
-        <h1 className="text-3xl font-black text-zinc-900">Estatísticas</h1>
-        <p className="text-zinc-500 mt-2">Analise seu desempenho e distribuição de tempo de estudo.</p>
+        <h1 className="text-3xl font-black text-zinc-900 dark:text-zinc-100">Estatísticas</h1>
+        <p className="text-zinc-500 dark:text-zinc-400 mt-2">Analise seu desempenho e distribuição de tempo de estudo.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Gráfico de Barras - Últimos 7 Dias */}
-        <div className="bg-white p-6 md:p-8 rounded-3xl border border-zinc-200 shadow-sm">
+        <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/15 text-violet-600 dark:text-violet-300 flex items-center justify-center">
               <BarChart3 size={20} />
             </div>
-            <h2 className="text-xl font-bold text-zinc-900">Tempo de Estudo (Últimos 7 dias)</h2>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Tempo de Estudo (Últimos 7 dias)</h2>
           </div>
           
           <div className="h-72 w-full">
@@ -106,13 +106,13 @@ export function Analytics() {
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: '#71717a', fontSize: 12 }} 
+                  tick={{ fill: '#a1a1aa', fontSize: 12 }} 
                   dy={10}
                 />
                 <YAxis 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{ fill: '#71717a', fontSize: 12 }} 
+                  tick={{ fill: '#a1a1aa', fontSize: 12 }} 
                 />
                 <Tooltip 
                     cursor={{ fill: '#f4f4f5' }}
@@ -133,12 +133,12 @@ export function Analytics() {
         </div>
 
         {/* Gráfico de Pizza - Distribuição por Matéria */}
-        <div className="bg-white p-6 md:p-8 rounded-3xl border border-zinc-200 shadow-sm">
+        <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 flex items-center justify-center">
               <PieChartIcon size={20} />
             </div>
-            <h2 className="text-xl font-bold text-zinc-900">Distribuição (Últimos 7 dias)</h2>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Distribuição (Últimos 7 dias)</h2>
           </div>
 
           <div className="h-72 w-full">
@@ -167,12 +167,12 @@ export function Analytics() {
                     verticalAlign="bottom" 
                     height={36}
                     iconType="circle"
-                    formatter={(value) => <span className="text-zinc-600 font-medium ml-1">{value}</span>}
+                    formatter={(value) => <span className="text-zinc-600 dark:text-zinc-300 font-medium ml-1">{value}</span>}
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-zinc-400">
+              <div className="h-full flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500">
                 <PieChartIcon size={48} className="mb-4 opacity-20" />
                 <p className="font-medium text-center px-8">Complete algumas sessões de estudo para ver sua distribuição de tempo aqui.</p>
               </div>

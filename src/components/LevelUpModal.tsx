@@ -61,15 +61,28 @@ export function LevelUpModal() {
     rose: 'from-rose-500 to-rose-700',
   };
 
+  const textColor = {
+    zinc: 'text-zinc-600',
+    blue: 'text-blue-600',
+    orange: 'text-orange-600',
+    violet: 'text-violet-600',
+    amber: 'text-amber-600',
+    emerald: 'text-emerald-600',
+    red: 'text-red-600',
+    cyan: 'text-cyan-600',
+    fuchsia: 'text-fuchsia-600',
+    rose: 'text-rose-600',
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm relative overflow-hidden transform animate-in zoom-in-95 duration-500">
+      <div className="bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl w-full max-w-sm relative overflow-hidden transform animate-in zoom-in-95 duration-500">
         
         {/* Header Decorativo */}
         <div className={`h-32 bg-gradient-to-br ${colorStyles[newClass.color]} relative flex items-center justify-center`}>
           <div className="absolute inset-0 bg-white/20 pattern-grid opacity-50"></div>
-          <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xl translate-y-12 border-4 border-white z-10 relative">
-            <ClassIcon size={40} className={`text-${newClass.color}-600 drop-shadow-md`} />
+          <div className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center shadow-xl translate-y-12 border-4 border-white dark:border-zinc-900 z-10 relative">
+            <ClassIcon size={40} className={`${textColor[newClass.color]} drop-shadow-md`} />
             <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-yellow-900 w-8 h-8 rounded-full flex items-center justify-center font-black border-2 border-white shadow-sm">
               {levelUpData.newLevel}
             </div>
@@ -91,18 +104,18 @@ export function LevelUpModal() {
             <span>Level Up!</span>
           </div>
           
-          <h2 className="text-3xl font-black text-zinc-900 mb-2">
+          <h2 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 mb-2">
             Nível {levelUpData.newLevel}
           </h2>
           
           {isClassUp ? (
-            <p className="text-zinc-500 text-lg">
+            <p className="text-zinc-500 dark:text-zinc-400 text-lg">
               Incrível! Você evoluiu para a classe <br/>
-              <strong className={`text-${newClass.color}-600 text-xl`}>{newClass.name}</strong>
+              <strong className={`${textColor[newClass.color]} text-xl`}>{newClass.name}</strong>
             </p>
           ) : (
-            <p className="text-zinc-500 text-lg">
-              Você está ficando mais forte. Continue evoluindo na jornada de <strong className="text-zinc-800">{newClass.name}</strong>.
+            <p className="text-zinc-500 dark:text-zinc-400 text-lg">
+              Você está ficando mais forte. Continue evoluindo na jornada de <strong className="text-zinc-800 dark:text-zinc-200">{newClass.name}</strong>.
             </p>
           )}
 

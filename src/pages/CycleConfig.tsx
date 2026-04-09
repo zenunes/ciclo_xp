@@ -53,18 +53,18 @@ export function CycleConfig() {
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-3xl font-black text-zinc-900">Configurar Ciclo</h1>
-        <p className="text-zinc-500 mt-2">Defina as disciplinas e o tempo de cada bloco do seu ciclo.</p>
+        <h1 className="text-3xl font-black text-zinc-900 dark:text-zinc-100">Configurar Ciclo</h1>
+        <p className="text-zinc-500 dark:text-zinc-400 mt-2">Defina as disciplinas e o tempo de cada bloco do seu ciclo.</p>
       </div>
 
-      <div className="bg-white p-6 rounded-3xl border border-zinc-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-zinc-100 text-zinc-600 rounded-xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-xl flex items-center justify-center">
             <Clock size={24} />
           </div>
           <div>
-            <p className="text-sm font-medium text-zinc-500">Tempo Total do Ciclo</p>
-            <p className="text-2xl font-bold text-zinc-900">
+            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Tempo Total do Ciclo</p>
+            <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
               {Math.floor(totalTime / 60)}h {totalTime % 60}m
             </p>
           </div>
@@ -104,15 +104,15 @@ export function CycleConfig() {
             initial={{ opacity: 0, y: -20, height: 0 }}
             animate={{ opacity: 1, y: 0, height: 'auto' }}
             exit={{ opacity: 0, y: -20, height: 0 }}
-            className="bg-white p-6 rounded-3xl border border-violet-200 shadow-lg relative overflow-hidden"
+            className="bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-violet-200 dark:border-zinc-800 shadow-lg relative overflow-hidden"
             onSubmit={handleAdd}
           >
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-zinc-900">Nova Disciplina</h3>
+              <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Nova Disciplina</h3>
               <button 
                 type="button" 
                 onClick={() => setIsAdding(false)}
-                className="text-zinc-400 hover:text-zinc-700"
+                className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
               >
                 <X size={24} />
               </button>
@@ -120,7 +120,7 @@ export function CycleConfig() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
-                <label className="block text-sm font-bold text-zinc-700 mb-2">Nome da Disciplina</label>
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">Nome da Disciplina</label>
                 <input
                   type="text"
                   required
@@ -128,24 +128,24 @@ export function CycleConfig() {
                   placeholder="Ex: Matemática"
                   value={newSubject.name}
                   onChange={(e) => setNewSubject({ ...newSubject, name: e.target.value })}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-zinc-700 mb-2">Duração (minutos)</label>
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">Duração (minutos)</label>
                 <input
                   type="number"
                   min="1"
                   required
                   value={newSubject.durationMinutes}
                   onChange={(e) => setNewSubject({ ...newSubject, durationMinutes: parseInt(e.target.value) || 0 })}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-zinc-700 mb-2">Peso (1 a 10)</label>
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">Peso (1 a 10)</label>
                 <input
                   type="number"
                   min="1"
@@ -154,12 +154,12 @@ export function CycleConfig() {
                   required
                   value={newSubject.weight}
                   onChange={(e) => setNewSubject({ ...newSubject, weight: parseInt(e.target.value) || 1 })}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-bold text-zinc-700 mb-2">Cor</label>
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">Cor</label>
                 <div className="flex flex-wrap gap-3">
                   {COLORS.map((c) => (
                     <button
@@ -168,7 +168,7 @@ export function CycleConfig() {
                       onClick={() => setNewSubject({ ...newSubject, color: c })}
                       className={cn(
                         "w-10 h-10 rounded-full transition-transform active:scale-90 flex items-center justify-center text-white",
-                        newSubject.color === c ? "scale-110 ring-4 ring-offset-2 ring-violet-200" : "hover:scale-110"
+                        newSubject.color === c ? "scale-110 ring-4 ring-offset-2 ring-violet-200 dark:ring-zinc-700 dark:ring-offset-zinc-900" : "hover:scale-110"
                       )}
                       style={{ backgroundColor: c }}
                     >
@@ -182,7 +182,7 @@ export function CycleConfig() {
             <div className="mt-8 flex justify-end">
               <button
                 type="submit"
-                className="px-8 py-3 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl font-bold transition-all active:scale-95"
+                className="px-8 py-3 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl font-bold transition-all active:scale-95 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900"
               >
                 Salvar
               </button>
@@ -198,10 +198,10 @@ export function CycleConfig() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-center py-12 bg-white rounded-3xl border border-zinc-200 border-dashed"
+              className="text-center py-12 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 border-dashed"
             >
-              <p className="text-zinc-500 font-medium">Nenhuma disciplina adicionada ainda.</p>
-              <p className="text-zinc-400 text-sm mt-1">Comece adicionando os blocos do seu ciclo.</p>
+              <p className="text-zinc-500 dark:text-zinc-400 font-medium">Nenhuma disciplina adicionada ainda.</p>
+              <p className="text-zinc-400 dark:text-zinc-500 text-sm mt-1">Comece adicionando os blocos do seu ciclo.</p>
             </motion.div>
           )}
           
@@ -212,7 +212,7 @@ export function CycleConfig() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               key={subject.id}
-              className="bg-white p-4 md:p-6 rounded-2xl border border-zinc-200 shadow-sm flex items-center gap-4 md:gap-6 group"
+              className="bg-white dark:bg-zinc-900 p-4 md:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm flex items-center gap-4 md:gap-6 group"
             >
               <div className="text-2xl font-black text-zinc-300 w-8 text-center hidden md:block">
                 {index + 1}
@@ -224,14 +224,14 @@ export function CycleConfig() {
                 {subject.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg md:text-xl font-bold text-zinc-900 truncate">{subject.name}</h3>
-                <div className="text-zinc-500 text-sm md:text-base flex flex-wrap items-center gap-4 mt-1">
+                <h3 className="text-lg md:text-xl font-bold text-zinc-900 dark:text-zinc-100 truncate">{subject.name}</h3>
+                <div className="text-zinc-500 dark:text-zinc-400 text-sm md:text-base flex flex-wrap items-center gap-4 mt-1">
                   <span className="flex items-center gap-1.5">
                     <Clock size={16} />
                     {subject.durationMinutes} minutos
                   </span>
                   {subject.weight && (
-                    <span className="flex items-center gap-1.5 bg-violet-100 text-violet-700 px-2 py-0.5 rounded-md font-semibold text-xs md:text-sm">
+                    <span className="flex items-center gap-1.5 bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300 px-2 py-0.5 rounded-md font-semibold text-xs md:text-sm">
                       Peso {subject.weight}
                     </span>
                   )}
@@ -239,7 +239,7 @@ export function CycleConfig() {
               </div>
               <button
                 onClick={() => removeSubject(subject.id)}
-                className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 hover:text-red-600 transition-colors opacity-100 md:opacity-0 group-hover:opacity-100 focus:opacity-100 flex-shrink-0"
+                className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/15 text-red-500 dark:text-red-300 flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-500/25 hover:text-red-600 dark:hover:text-red-200 transition-colors opacity-100 md:opacity-0 group-hover:opacity-100 focus:opacity-100 flex-shrink-0"
               >
                 <Trash2 size={20} />
               </button>

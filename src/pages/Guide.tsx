@@ -9,14 +9,14 @@ export function Guide() {
     <div className="space-y-12 max-w-4xl mx-auto pb-12">
       {/* Header */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-black text-zinc-900 tracking-tight">Como funciona o Ciclos XP?</h1>
-        <p className="text-lg text-zinc-500 max-w-2xl mx-auto">
+        <h1 className="text-4xl font-black text-zinc-900 dark:text-zinc-100 tracking-tight">Como funciona o Ciclos XP?</h1>
+        <p className="text-lg text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto">
           Um guia rápido para você entender a metodologia de ciclos de estudo e o nosso sistema de gamificação RPG.
         </p>
         
         <button
           onClick={() => setForceTour(true)}
-          className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded-xl font-bold transition-all active:scale-95"
+          className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-violet-100 hover:bg-violet-200 dark:bg-violet-500/15 dark:hover:bg-violet-500/25 text-violet-700 dark:text-violet-300 rounded-xl font-bold transition-all active:scale-95"
         >
           <Play size={20} fill="currentColor" />
           Fazer o Tour Interativo Novamente
@@ -24,17 +24,17 @@ export function Guide() {
       </div>
 
       {/* Section 1: Método de Ciclos */}
-      <section className="bg-white p-8 rounded-3xl border border-zinc-200 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-violet-100 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50" />
+      <section className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-violet-100 dark:bg-violet-500/15 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50 dark:opacity-30" />
         
         <div className="flex items-center gap-4 mb-6 relative">
-          <div className="w-12 h-12 bg-violet-100 text-violet-600 rounded-xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-violet-100 dark:bg-violet-500/15 text-violet-600 dark:text-violet-300 rounded-xl flex items-center justify-center">
             <RefreshCw size={24} />
           </div>
-          <h2 className="text-2xl font-bold text-zinc-900">1. O Método de Ciclos</h2>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">1. O Método de Ciclos</h2>
         </div>
         
-        <div className="space-y-4 text-zinc-600 leading-relaxed relative">
+        <div className="space-y-4 text-zinc-600 dark:text-zinc-300 leading-relaxed relative">
           <p>
             Esqueça o cronograma tradicional de "Segunda é dia de Matemática, Terça é História". O método de ciclos funciona como uma <strong>roda contínua de disciplinas</strong>.
           </p>
@@ -56,17 +56,17 @@ export function Guide() {
       </section>
 
       {/* Section 2: RPG e Classes */}
-      <section className="bg-white p-8 rounded-3xl border border-zinc-200 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-amber-100 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2 opacity-50" />
+      <section className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-amber-100 dark:bg-amber-500/15 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2 opacity-50 dark:opacity-30" />
         
         <div className="flex items-center gap-4 mb-6 relative">
-          <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-amber-100 dark:bg-amber-500/15 text-amber-600 dark:text-amber-300 rounded-xl flex items-center justify-center">
             <Sword size={24} />
           </div>
-          <h2 className="text-2xl font-bold text-zinc-900">2. Classes de RPG e Evolução</h2>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">2. Classes de RPG e Evolução</h2>
         </div>
         
-        <div className="space-y-6 text-zinc-600 leading-relaxed relative">
+        <div className="space-y-6 text-zinc-600 dark:text-zinc-300 leading-relaxed relative">
           <p>
             Transformamos seu estudo em um jogo. Cada minuto de estudo focado e cada revisão concluída rendem <strong>XP (Pontos de Experiência)</strong>. Acumulando XP, você sobe de Nível.
           </p>
@@ -79,16 +79,16 @@ export function Guide() {
             {CHARACTER_CLASSES.map((cls, idx) => {
               const Icon = cls.icon;
               const colorClasses = {
-                zinc: 'bg-zinc-100 text-zinc-700 border-zinc-200',
-                blue: 'bg-blue-100 text-blue-700 border-blue-200',
-                orange: 'bg-orange-100 text-orange-700 border-orange-200',
-                violet: 'bg-violet-100 text-violet-700 border-violet-200',
-                amber: 'bg-amber-100 text-amber-700 border-amber-200',
-                emerald: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                red: 'bg-red-100 text-red-700 border-red-200',
-                cyan: 'bg-cyan-100 text-cyan-700 border-cyan-200',
-                fuchsia: 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200',
-                rose: 'bg-rose-100 text-rose-700 border-rose-200',
+                zinc: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700',
+                blue: 'bg-blue-100 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-500/20',
+                orange: 'bg-orange-100 dark:bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-500/20',
+                violet: 'bg-violet-100 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-500/20',
+                amber: 'bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-500/20',
+                emerald: 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-500/20',
+                red: 'bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-300 border-red-200 dark:border-red-500/20',
+                cyan: 'bg-cyan-100 dark:bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-200 dark:border-cyan-500/20',
+                fuchsia: 'bg-fuchsia-100 dark:bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-300 border-fuchsia-200 dark:border-fuchsia-500/20',
+                rose: 'bg-rose-100 dark:bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-500/20',
               }[cls.color];
 
               return (
@@ -105,15 +105,15 @@ export function Guide() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Section 3: Revisões */}
-        <section className="bg-white p-8 rounded-3xl border border-zinc-200 shadow-sm relative overflow-hidden">
+        <section className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 rounded-xl flex items-center justify-center">
               <Brain size={24} />
             </div>
-            <h2 className="text-xl font-bold text-zinc-900">Revisões Inteligentes</h2>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Revisões Inteligentes</h2>
           </div>
           
-          <div className="space-y-4 text-zinc-600 text-sm">
+          <div className="space-y-4 text-zinc-600 dark:text-zinc-300 text-sm">
             <p>
               Ao terminar uma sessão, o sistema agenda automaticamente uma revisão para as próximas 24h.
             </p>
@@ -129,15 +129,15 @@ export function Guide() {
         </section>
 
         {/* Section 4: Ofensiva */}
-        <section className="bg-white p-8 rounded-3xl border border-zinc-200 shadow-sm relative overflow-hidden">
+        <section className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-12 h-12 bg-orange-100 text-orange-500 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-500/15 text-orange-500 dark:text-orange-300 rounded-xl flex items-center justify-center">
               <Flame size={24} />
             </div>
-            <h2 className="text-xl font-bold text-zinc-900">Ofensiva (Streaks)</h2>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Ofensiva (Streaks)</h2>
           </div>
           
-          <div className="space-y-4 text-zinc-600 text-sm">
+          <div className="space-y-4 text-zinc-600 dark:text-zinc-300 text-sm">
             <p>
               O número de dias consecutivos que você estuda é a sua <strong>Ofensiva</strong>. 
             </p>

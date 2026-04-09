@@ -84,7 +84,7 @@ export function StudySession() {
               >
                 Disciplina Atual
               </span>
-              <h1 className="text-4xl md:text-5xl font-black text-zinc-900">{currentSubject.name}</h1>
+              <h1 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-zinc-100">{currentSubject.name}</h1>
             </div>
 
             {/* Circular Timer */}
@@ -94,7 +94,7 @@ export function StudySession() {
                   cx="50%"
                   cy="50%"
                   r="45%"
-                  className="fill-none stroke-zinc-100"
+                  className="fill-none stroke-zinc-100 dark:stroke-zinc-800"
                   strokeWidth="8"
                 />
                 <circle
@@ -113,10 +113,10 @@ export function StudySession() {
               </svg>
               
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-6xl md:text-7xl font-black text-zinc-900 tabular-nums tracking-tight">
+                <span className="text-6xl md:text-7xl font-black text-zinc-900 dark:text-zinc-100 tabular-nums tracking-tight">
                   {String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')}
                 </span>
-                <span className="text-zinc-500 font-medium mt-2">restantes</span>
+                <span className="text-zinc-500 dark:text-zinc-400 font-medium mt-2">restantes</span>
               </div>
             </div>
 
@@ -124,7 +124,7 @@ export function StudySession() {
             <div className="flex items-center gap-6">
               <button
                 onClick={handleSkipSubject}
-                className="w-14 h-14 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 flex items-center justify-center transition-all active:scale-95"
+                className="w-14 h-14 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-200 flex items-center justify-center transition-all active:scale-95"
                 title="Pular Disciplina"
               >
                 <ChevronRight size={24} />
@@ -140,7 +140,7 @@ export function StudySession() {
 
               <button
                 onClick={() => setIsFinished(true)}
-                className="w-14 h-14 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-600 flex items-center justify-center transition-all active:scale-95"
+                className="w-14 h-14 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-200 flex items-center justify-center transition-all active:scale-95"
                 title="Concluir Antecipadamente"
               >
                 <Square size={20} fill="currentColor" />
@@ -152,20 +152,20 @@ export function StudySession() {
             key="finished"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="w-full bg-white p-8 md:p-12 rounded-3xl border border-zinc-200 shadow-xl"
+            className="w-full bg-white dark:bg-zinc-900 p-8 md:p-12 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl"
           >
-            <div className="w-20 h-20 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-500/15 text-emerald-500 dark:text-emerald-300 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 size={40} />
             </div>
             
-            <h2 className="text-3xl font-black text-zinc-900 text-center mb-2">Bloco Concluído!</h2>
-            <p className="text-zinc-500 text-center mb-8">
-              Você ganhou <strong className="text-violet-600">{currentSubject.durationMinutes * 10 * (currentSubject.weight || 1)} XP</strong>. O que você estudou?
+            <h2 className="text-3xl font-black text-zinc-900 dark:text-zinc-100 text-center mb-2">Bloco Concluído!</h2>
+            <p className="text-zinc-500 dark:text-zinc-400 text-center mb-8">
+              Você ganhou <strong className="text-violet-600 dark:text-violet-400">{currentSubject.durationMinutes * 10 * (currentSubject.weight || 1)} XP</strong>. O que você estudou?
             </p>
 
             <form onSubmit={handleComplete} className="space-y-6">
               <div>
-                <label className="block text-sm font-bold text-zinc-700 mb-2">Tópico Estudado (Para revisão futura)</label>
+                <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300 mb-2">Tópico Estudado (Para revisão futura)</label>
                 <input
                   type="text"
                   required
@@ -173,7 +173,7 @@ export function StudySession() {
                   placeholder="Ex: Equações de 2º Grau"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
-                  className="w-full px-4 py-4 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-lg"
+                  className="w-full px-4 py-4 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-lg"
                 />
               </div>
 

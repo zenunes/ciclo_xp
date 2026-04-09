@@ -48,30 +48,30 @@ export function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="w-16 h-16 bg-violet-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl">
           <BookOpenCheck size={32} />
         </div>
-        <h2 className="text-center text-3xl font-black text-zinc-900">
+        <h2 className="text-center text-3xl font-black text-zinc-900 dark:text-zinc-100">
           Ciclos XP
         </h2>
-        <p className="mt-2 text-center text-sm text-zinc-600">
+        <p className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-400">
           {isSignUp ? 'Crie sua conta para começar' : 'Entre para continuar seus estudos'}
         </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-xl border border-zinc-200 sm:rounded-3xl sm:px-10">
+        <div className="bg-white dark:bg-zinc-900 py-8 px-4 shadow-xl border border-zinc-200 dark:border-zinc-800 sm:rounded-3xl sm:px-10">
           <form className="space-y-6" onSubmit={handleAuth}>
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium">
+              <div className="bg-red-50 dark:bg-red-500/15 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-300 px-4 py-3 rounded-xl text-sm font-medium">
                 {error}
               </div>
             )}
             
             <div>
-              <label className="block text-sm font-bold text-zinc-700">
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300">
                 Email
               </label>
               <div className="mt-1">
@@ -80,14 +80,14 @@ export function Auth() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
                   placeholder="seu@email.com"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-zinc-700">
+              <label className="block text-sm font-bold text-zinc-700 dark:text-zinc-300">
                 Senha
               </label>
               <div className="mt-1">
@@ -96,7 +96,7 @@ export function Auth() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
+                  className="w-full px-4 py-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
                   placeholder="••••••••"
                 />
               </div>
@@ -116,7 +116,7 @@ export function Auth() {
           <div className="mt-6 text-center">
             <button
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm font-medium text-violet-600 hover:text-violet-500"
+              className="text-sm font-medium text-violet-600 hover:text-violet-500 dark:text-violet-400 dark:hover:text-violet-300"
             >
               {isSignUp
                 ? 'Já tem uma conta? Entre aqui'
