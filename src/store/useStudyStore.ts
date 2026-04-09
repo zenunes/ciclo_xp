@@ -26,6 +26,11 @@ interface StudyState {
     lastStudyDate: string | null;
     hasSeenTutorial: boolean;
   };
+  levelUpData: {
+    show: boolean;
+    oldLevel: number;
+    newLevel: number;
+  } | null;
   cycle: {
     isActive: boolean;
     subjects: Subject[];
@@ -47,6 +52,7 @@ interface StudyState {
   completeReview: (id: string, difficulty: 'easy' | 'medium' | 'hard') => Promise<void>;
   setHasSeenTutorial: (value: boolean) => Promise<void>;
   setForceTour: (value: boolean) => void;
+  closeLevelUpModal: () => void;
 }
 
 const calculateLevel = (xp: number) => Math.floor(Math.sqrt(xp / 100)) + 1;
@@ -59,6 +65,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     lastStudyDate: null,
     hasSeenTutorial: false,
   },
+  levelUpData: null,
   cycle: {
     isActive: false,
     subjects: [],
@@ -270,6 +277,8 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     }).select().single();
 
     const nextIndex = (state.cycle.currentIndex + 1) % state.cycle.subjects.length;
+    
+    const didLevelUp = newLevel > state.user.level;
 
     set((state) => {
       const newReviews = [...state.reviews];
@@ -290,6 +299,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
           currentStreak: newStreak,
           lastStudyDate: newLastStudyDate
         },
+        levelUpData: didLevelUp ? { show: true, oldLevel: state.user.level, newLevel } : state.levelUpData,
         cycle: { ...state.cycle, currentIndex: nextIndex },
         reviews: newReviews,
       };
@@ -365,6 +375,8 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
       duration_minutes: 10,
     });
 
+    const didLevelUp = newLevel > state.user.level;
+
     set((state) => {
       const updatedReviews = state.reviews.map((r) =>
         r.id === id ? { ...r, completed: true } : r
@@ -388,6 +400,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
           currentStreak: newStreak,
           lastStudyDate: newLastStudyDate
         },
+        levelUpData: didLevelUp ? { show: true, oldLevel: state.user.level, newLevel } : state.levelUpData,
         reviews: updatedReviews,
       };
     });
@@ -411,4 +424,5 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     }));
   },
   setForceTour: (value: boolean) => set({ forceTour: value }),
+  closeLevelUpModal: () => set({ levelUpData: null }),
 }));
