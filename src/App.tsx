@@ -10,6 +10,7 @@ import { Guide } from './pages/Guide';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { supabase } from './lib/supabase';
 import { cn } from './lib/utils';
+import { OnboardingTour } from './components/OnboardingTour';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
@@ -30,11 +31,12 @@ function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-zinc-50 flex flex-col">
+      <OnboardingTour />
       <header className="bg-white border-b border-zinc-200 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h1 className="text-xl font-bold text-violet-600">Ciclos XP</h1>
           <nav className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-6">
-            <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
+            <div className="tour-navigation flex items-center gap-4 sm:gap-6 overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
               <Link to="/" className={navLinkClass('/')}>Início</Link>
               <Link to="/config" className={navLinkClass('/config')}>Configurar</Link>
               <Link to="/reviews" className={navLinkClass('/reviews')}>Revisões</Link>
