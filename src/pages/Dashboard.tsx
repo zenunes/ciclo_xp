@@ -44,7 +44,7 @@ export function Dashboard() {
   return (
     <div className="space-y-8">
       {/* RPG Character Card */}
-      <div className={`relative overflow-hidden rounded-3xl p-8 border shadow-lg bg-gradient-to-br ${colorStyles[currentClass.color]}`}>
+      <div className={`tour-rpg-card relative overflow-hidden rounded-3xl p-8 border shadow-lg bg-gradient-to-br ${colorStyles[currentClass.color]}`}>
         <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${glowColors[currentClass.color]} to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`} />
         
         <div className="relative flex flex-col md:flex-row items-center gap-6">
@@ -75,7 +75,7 @@ export function Dashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="tour-stats grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 bg-orange-100 text-orange-500 rounded-xl flex items-center justify-center">
             <Flame size={24} />
@@ -109,7 +109,7 @@ export function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Next Subject Card */}
-        <div className="bg-white rounded-3xl p-8 border border-zinc-200 shadow-sm relative overflow-hidden group">
+        <div className="tour-next-subject bg-white rounded-3xl p-8 border border-zinc-200 shadow-sm relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-400/20 to-fuchsia-400/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
           
           <h2 className="text-xl font-bold text-zinc-900 mb-6 relative">Próximo no Ciclo</h2>

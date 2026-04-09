@@ -24,6 +24,7 @@ interface StudyState {
     level: number;
     currentStreak: number;
     lastStudyDate: string | null;
+    hasSeenTutorial: boolean;
   };
   cycle: {
     isActive: boolean;
@@ -32,6 +33,7 @@ interface StudyState {
   };
   reviews: Review[];
   isLoading: boolean;
+  forceTour: boolean;
   
   // Actions
   fetchUserData: () => Promise<void>;
@@ -43,6 +45,8 @@ interface StudyState {
   skipSubject: () => void;
   completeSession: (topic: string, durationMinutes: number) => Promise<void>;
   completeReview: (id: string, difficulty: 'easy' | 'medium' | 'hard') => Promise<void>;
+  setHasSeenTutorial: (value: boolean) => Promise<void>;
+  setForceTour: (value: boolean) => void;
 }
 
 const calculateLevel = (xp: number) => Math.floor(Math.sqrt(xp / 100)) + 1;
@@ -53,6 +57,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     level: 1,
     currentStreak: 0,
     lastStudyDate: null,
+    hasSeenTutorial: false,
   },
   cycle: {
     isActive: false,
@@ -61,6 +66,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
   },
   reviews: [],
   isLoading: true,
+  forceTour: false,
 
   fetchUserData: async () => {
     set({ isLoading: true });
@@ -100,6 +106,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
           level: profileRes.data?.level || 1,
           currentStreak: profileRes.data?.current_streak || 0,
           lastStudyDate: profileRes.data?.last_study_date || null,
+          hasSeenTutorial: profileRes.data?.has_seen_tutorial || false,
         },
         cycle: { 
           isActive: false, 
@@ -277,6 +284,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
       }
       return {
         user: { 
+          ...state.user,
           xp: newXp, 
           level: newLevel,
           currentStreak: newStreak,
@@ -374,6 +382,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
 
       return {
         user: { 
+          ...state.user,
           xp: newXp, 
           level: newLevel,
           currentStreak: newStreak,
@@ -383,4 +392,23 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
       };
     });
   },
+
+  setHasSeenTutorial: async (value: boolean) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase.from('profiles').update({ has_seen_tutorial: value }).eq('id', user.id);
+    
+    if (error) {
+      console.warn("A coluna has_seen_tutorial pode não existir no banco. Atualizando estado local como fallback.");
+    }
+
+    set((state) => ({
+      user: {
+        ...state.user,
+        hasSeenTutorial: value
+      }
+    }));
+  },
+  setForceTour: (value: boolean) => set({ forceTour: value }),
 }));

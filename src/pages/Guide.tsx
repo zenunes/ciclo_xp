@@ -1,7 +1,10 @@
-import { Book, Shield, Sword, Crown, Sparkles, RefreshCw, Brain, Flame, Target } from 'lucide-react';
+import { RefreshCw, Brain, Flame, Target, Play, Sword } from 'lucide-react';
 import { CHARACTER_CLASSES } from '../lib/rpg';
+import { useStudyStore } from '../store/useStudyStore';
 
 export function Guide() {
+  const { setForceTour } = useStudyStore();
+
   return (
     <div className="space-y-12 max-w-4xl mx-auto pb-12">
       {/* Header */}
@@ -10,6 +13,14 @@ export function Guide() {
         <p className="text-lg text-zinc-500 max-w-2xl mx-auto">
           Um guia rápido para você entender a metodologia de ciclos de estudo e o nosso sistema de gamificação RPG.
         </p>
+        
+        <button
+          onClick={() => setForceTour(true)}
+          className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded-xl font-bold transition-all active:scale-95"
+        >
+          <Play size={20} fill="currentColor" />
+          Fazer o Tour Interativo Novamente
+        </button>
       </div>
 
       {/* Section 1: Método de Ciclos */}
