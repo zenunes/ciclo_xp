@@ -115,11 +115,11 @@ export function Analytics() {
                   tick={{ fill: '#71717a', fontSize: 12 }} 
                 />
                 <Tooltip 
-                  cursor={{ fill: '#f4f4f5' }}
-                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  formatter={(value: any) => [`${value} minutos`, 'Tempo']}
-                  labelFormatter={(label) => `Dia: ${label}`}
-                />
+                    cursor={{ fill: '#f4f4f5' }}
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    formatter={(value) => [`${value} minutos`, 'Tempo']}
+                    labelFormatter={(label) => `Dia: ${label}`}
+                  />
                 <Bar 
                   dataKey="minutos" 
                   fill="#8b5cf6" 
@@ -160,9 +160,9 @@ export function Analytics() {
                     ))}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                    formatter={(value: any) => [`${value} minutos`, 'Tempo']}
-                  />
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                      formatter={(value) => [`${value} minutos`, 'Tempo']}
+                    />
                   <Legend 
                     verticalAlign="bottom" 
                     height={36}
