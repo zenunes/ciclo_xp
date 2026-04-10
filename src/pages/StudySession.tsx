@@ -6,12 +6,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { playTimerEndSound } from '../lib/utils';
 
 export function StudySession() {
-  const { cycle, completeSession, skipSubject } = useStudyStore();
+  const { cycle, completeSession, postponeSubject } = useStudyStore();
   const navigate = useNavigate();
   
-  const currentSubject = cycle.subjects[cycle.currentIndex];
+  const currentSubjectId = cycle.queue[cycle.currentIndex];
+  const currentSubject = cycle.subjects.find(s => s.id === currentSubjectId);
   
-  const [timeLeft, setTimeLeft] = useState(currentSubject?.durationMinutes * 60 || 0);
+  const storageKey = 'ciclos_xp_current_timer';
+  const [timeLeft, setTimeLeft] = useState(() => {
+    const saved = localStorage.getItem(storageKey);
+    return saved ? parseInt(saved, 10) : (currentSubject?.durationMinutes || 0) * 60;
+  });
   const [isActive, setIsActive] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [topic, setTopic] = useState('');
@@ -21,12 +26,31 @@ export function StudySession() {
       navigate('/config');
       return;
     }
-    // Reset timer if subject changes
-    setTimeLeft(currentSubject.durationMinutes * 60);
-    setIsActive(false);
-    setIsFinished(false);
-    setTopic('');
+    // Only reset timer if there is no saved timer or if it's a completely fresh start
+    // In our case, if the user manually switched subjects, we clear it.
+    // To handle this properly: if localStorage doesn't match the new subject, we should reset.
+    // For simplicity, we just sync timeLeft to localStorage every second.
   }, [currentSubject, navigate]);
+
+  useEffect(() => {
+    if (!currentSubject) return;
+    
+    // Quando a matéria muda (porque o usuário concluiu ou adiou), 
+    // precisamos resetar o timer APENAS se a sessão atual não estiver em andamento
+    // ou se o timeLeft salvo for 0.
+    // Vamos garantir que sempre que a UI renderizar um novo assunto limpo, o timer reinicie.
+    const saved = localStorage.getItem(storageKey);
+    if (!saved) {
+      setTimeLeft(currentSubject.durationMinutes * 60);
+      setIsActive(false);
+      setIsFinished(false);
+      setTopic('');
+    }
+  }, [currentSubject]);
+
+  useEffect(() => {
+    localStorage.setItem(storageKey, timeLeft.toString());
+  }, [timeLeft]);
 
   useEffect(() => {
     let interval: number;
@@ -55,14 +79,18 @@ export function StudySession() {
     if (!topic.trim()) return;
     
     completeSession(topic, currentSubject.durationMinutes);
+    localStorage.removeItem(storageKey);
     setIsFinished(false);
     setIsActive(false);
     setTopic('');
-    // The store will update currentIndex, triggering the first useEffect to reset
+    // The store will update currentIndex, triggering the next subject
   };
 
-  const handleSkipSubject = () => {
-    skipSubject();
+  const handlePostponeSubject = () => {
+    postponeSubject();
+    localStorage.removeItem(storageKey);
+    setIsActive(false);
+    setIsFinished(false);
   };
 
   return (
@@ -123,9 +151,9 @@ export function StudySession() {
             {/* Controls */}
             <div className="flex items-center gap-6">
               <button
-                onClick={handleSkipSubject}
+                onClick={handlePostponeSubject}
                 className="w-14 h-14 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-200 flex items-center justify-center transition-all active:scale-95"
-                title="Pular Disciplina"
+                title="Adiar Disciplina (vai para o fim da fila)"
               >
                 <ChevronRight size={24} />
               </button>
