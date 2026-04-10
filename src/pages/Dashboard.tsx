@@ -10,7 +10,8 @@ export function Dashboard() {
   const { user, cycle, reviews } = useStudyStore();
   const navigate = useNavigate();
 
-  const nextSubject = cycle.subjects[cycle.currentIndex];
+  const nextSubjectId = cycle.queue[cycle.currentIndex];
+  const nextSubject = cycle.subjects.find(s => s.id === nextSubjectId);
   const pendingReviews = reviews.filter((r) => !r.completed);
   const urgentReviews = pendingReviews.filter((r) => isPast(parseISO(r.dueDate)));
 

@@ -36,11 +36,13 @@ export function CycleConfig() {
 
   const handleStartCycle = () => {
     startCycle();
+    localStorage.removeItem('ciclos_xp_current_timer'); // Clear timer when starting new cycle
     navigate('/session');
   };
 
   const handleStopCycle = () => {
     stopCycle();
+    localStorage.removeItem('ciclos_xp_current_timer'); // Clear timer when stopping
     navigate('/');
   };
 
