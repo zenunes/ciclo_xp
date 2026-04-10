@@ -8,7 +8,7 @@ import { BarChart3, PieChart as PieChartIcon, Activity, Swords } from 'lucide-re
 import { Heatmap } from '../components/Heatmap';
 
 export function Analytics() {
-  const { cycle } = useStudyStore();
+  const { cycle, reviews } = useStudyStore();
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -102,7 +102,6 @@ export function Analytics() {
   // 4. Processar dados para o Gráfico de Força (Radar Chart)
   // Força = (Tempo Total em minutos / 60) * 10 + (Revisões Concluídas * 20)
   // Normalizamos para no máximo 100 para o gráfico
-  const { reviews } = useStudyStore();
   const radarData = cycle.subjects.map(subject => {
     // Pegar tempo estudado de todo o historyData (180 dias)
     const totalMinutes = historyData
