@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useStudyStore } from '../store/useStudyStore';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { format, subDays, startOfDay, parseISO, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { BarChart3, PieChart as PieChartIcon, Activity } from 'lucide-react';
+import { BarChart3, PieChart as PieChartIcon, Activity, Swords } from 'lucide-react';
 import { Heatmap } from '../components/Heatmap';
 
 export function Analytics() {
@@ -98,6 +98,31 @@ export function Analytics() {
     }
     return acc;
   }, [] as { date: Date; minutos: number }[]);
+
+  // 4. Processar dados para o Gráfico de Força (Radar Chart)
+  // Força = (Tempo Total em minutos / 60) * 10 + (Revisões Concluídas * 20)
+  // Normalizamos para no máximo 100 para o gráfico
+  const { reviews } = useStudyStore();
+  const radarData = cycle.subjects.map(subject => {
+    // Pegar tempo estudado de todo o historyData (180 dias)
+    const totalMinutes = historyData
+      .filter(entry => entry.subject_id === subject.id)
+      .reduce((sum, entry) => sum + entry.duration_minutes, 0);
+      
+    const completedReviews = reviews.filter(r => r.subjectId === subject.id && r.completed).length;
+    
+    let strength = (totalMinutes / 60) * 10 + (completedReviews * 20);
+    
+    // Normalizar a força para exibição (cap 100)
+    // Usamos um valor base de 10 pra matéria não sumir se a pessoa acabou de criar
+    strength = Math.min(Math.max(strength, 10), 100);
+
+    return {
+      subject: subject.name,
+      strength: Math.floor(strength),
+      fullMark: 100,
+    };
+  });
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto">
@@ -201,16 +226,67 @@ export function Analytics() {
 
       </div>
 
-      {/* Mapa de Calor (Heatmap) */}
-      <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/15 text-blue-600 dark:text-blue-300 flex items-center justify-center">
-            <Activity size={20} />
+      {/* Mapas Secundários (Força e Calor) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Gráfico de Força (Radar) */}
+        <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm lg:col-span-1 flex flex-col">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-500/15 text-orange-600 dark:text-orange-300 flex items-center justify-center">
+              <Swords size={20} />
+            </div>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Força por Disciplina</h2>
           </div>
-          <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Frequência de Estudos (Últimos 6 meses)</h2>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">Baseado em horas estudadas e revisões feitas (Últimos 6 meses).</p>
+
+          <div className="flex-1 min-h-[250px] w-full">
+            {radarData.length > 2 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                  <PolarGrid stroke="#e4e4e7" strokeDasharray="3 3" />
+                  <PolarAngleAxis 
+                    dataKey="subject" 
+                    tick={{ fill: '#71717a', fontSize: 12, fontWeight: 500 }} 
+                  />
+                  <PolarRadiusAxis 
+                    angle={30} 
+                    domain={[0, 100]} 
+                    tick={false} 
+                    axisLine={false} 
+                  />
+                  <Radar
+                    name="Força"
+                    dataKey="strength"
+                    stroke="#f97316"
+                    fill="#f97316"
+                    fillOpacity={0.3}
+                    animationDuration={1500}
+                  />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    formatter={(value) => [`${value} Pts`, 'Força']}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-zinc-400 dark:text-zinc-500">
+                <Swords size={48} className="mb-4 opacity-20" />
+                <p className="font-medium text-center px-4">Adicione pelo menos 3 disciplinas ao ciclo para ver seu gráfico de força.</p>
+              </div>
+            )}
+          </div>
         </div>
-        
-        <Heatmap data={heatmapData} />
+
+        {/* Mapa de Calor (Heatmap) */}
+        <div className="bg-white dark:bg-zinc-900 p-6 md:p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm lg:col-span-2">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-500/15 text-blue-600 dark:text-blue-300 flex items-center justify-center">
+              <Activity size={20} />
+            </div>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Frequência de Estudos (Últimos 6 meses)</h2>
+          </div>
+          
+          <Heatmap data={heatmapData} />
+        </div>
       </div>
     </div>
   );
