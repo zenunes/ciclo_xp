@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import confetti from 'canvas-confetti';
+import confetti from "canvas-confetti";
 import { useStudyStore } from '../store/useStudyStore';
 import { getCurrentClass } from '../lib/rpg';
 import { Trophy, X } from 'lucide-react';

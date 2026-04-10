@@ -36,8 +36,11 @@ function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initial = getPreferredTheme();
     setTheme(initial);
-    applyTheme(initial);
   }, []);
+
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
 
   const toggleTheme = () => {
     const next: Theme = theme === 'dark' ? 'light' : 'dark';

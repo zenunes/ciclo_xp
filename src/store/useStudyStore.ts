@@ -106,7 +106,9 @@ const loadDailyQuests = (): DailyQuest[] => {
         return parsed;
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    // Ignora erro de parser
+  }
   
   const newQuests = generateDailyQuests();
   localStorage.setItem('ciclos_xp_quests', JSON.stringify(newQuests));
@@ -136,7 +138,9 @@ const loadCycleState = () => {
   try {
     const saved = localStorage.getItem('ciclos_xp_cycle_state');
     if (saved) return JSON.parse(saved);
-  } catch(e) {}
+  } catch (e) {
+    // Ignora erro
+  }
   return null;
 };
 
@@ -184,7 +188,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
         supabase.from('reviews').select('*').eq('user_id', user.id).order('due_date', { ascending: true })
       ]);
 
-      const formattedSubjects = subjectsRes.data?.map((s: any) => ({
+      const formattedSubjects = subjectsRes.data?.map((s: { id: string, name: string, color: string, duration_minutes: number, weight?: number }) => ({
         id: s.id,
         name: s.name,
         color: s.color,
@@ -192,7 +196,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
         weight: s.weight,
       })) || [];
 
-      const formattedReviews = reviewsRes.data?.map((r: any) => ({
+      const formattedReviews = reviewsRes.data?.map((r: { id: string, subject_id: string, topic: string, due_date: string, completed: boolean }) => ({
         id: r.id,
         subjectId: r.subject_id,
         topic: r.topic,
@@ -290,7 +294,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
   },
 
   updateSubject: async (id, subjectData) => {
-    const updates: any = {};
+    const updates: { name?: string; color?: string; duration_minutes?: number; weight?: number } = {};
     if (subjectData.name) updates.name = subjectData.name;
     if (subjectData.color) updates.color = subjectData.color;
     if (subjectData.durationMinutes) updates.duration_minutes = subjectData.durationMinutes;
@@ -372,12 +376,12 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     if (!currentSubject) return;
 
     const weight = currentSubject.weight || 1;
-    let baseNewXp = state.user.xp + (durationMinutes * 10 * weight);
+    const baseNewXp = state.user.xp + (durationMinutes * 10 * weight);
     
     // Calcular Ofensiva (Streaks)
     const today = new Date();
     let newStreak = state.user.currentStreak;
-    let newLastStudyDate = formatISO(today, { representation: 'date' });
+    const newLastStudyDate = formatISO(today, { representation: 'date' });
 
     if (state.user.lastStudyDate) {
       const lastDate = parseISO(state.user.lastStudyDate);
@@ -491,12 +495,12 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
       xpReward = 80; // Difícil = Mais XP (incentivo)
     }
 
-    let baseNewXp = state.user.xp + xpReward;
+    const baseNewXp = state.user.xp + xpReward;
 
     // Calcular Ofensiva (Streaks)
     const today = new Date();
     let newStreak = state.user.currentStreak;
-    let newLastStudyDate = formatISO(today, { representation: 'date' });
+    const newLastStudyDate = formatISO(today, { representation: 'date' });
 
     if (state.user.lastStudyDate) {
       const lastDate = parseISO(state.user.lastStudyDate);
