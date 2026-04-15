@@ -78,12 +78,15 @@ export function OnboardingTour() {
     if (forceTour) {
       if (location.pathname !== '/') {
         navigate('/'); // Redireciona pra dashboard se tentar forçar o tour fora dela
-        setTimeout(() => setRun(true), 500); // Dá um tempo pra tela carregar
+        const timer = setTimeout(() => setRun(true), 500); // Dá um tempo pra tela carregar
+        return () => clearTimeout(timer);
       } else {
-        setRun(true);
+        const timer = setTimeout(() => setRun(true), 100);
+        return () => clearTimeout(timer);
       }
     } else if (location.pathname === '/' && user.hasSeenTutorial === false) {
-      setRun(true);
+      const timer = setTimeout(() => setRun(true), 100);
+      return () => clearTimeout(timer);
     }
   }, [user.hasSeenTutorial, forceTour, location.pathname, navigate]);
 

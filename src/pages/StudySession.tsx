@@ -20,17 +20,32 @@ export function StudySession() {
   const [isActive, setIsActive] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [topic, setTopic] = useState('');
+  
+  // Referência para guardar o momento exato em que o timer foi iniciado/retomado
+  const [lastUpdate, setLastUpdate] = useState<number | null>(null);
 
   useEffect(() => {
     if (!currentSubject) {
       navigate('/config');
       return;
     }
-    // Only reset timer if there is no saved timer or if it's a completely fresh start
-    // In our case, if the user manually switched subjects, we clear it.
-    // To handle this properly: if localStorage doesn't match the new subject, we should reset.
-    // For simplicity, we just sync timeLeft to localStorage every second.
-  }, [currentSubject, navigate]);
+    
+    // Tratamento de visibilidade da página (evitar que o navegador pare o timer completamente)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isActive) {
+        // Ao voltar para a aba, dizemos que a "última atualização" foi agora,
+        // mas primeiro compensamos o tempo que passou desde a última vez que checamos
+        // Porém, como o React vai re-renderizar, a lógica de deltaTime no setInterval
+        // já faria o cálculo natural de (now - lastUpdate), deduzindo os segundos.
+        // O problema é que o setTimeout para o navegador e o lastUpdate fica desatualizado.
+        // O useEffect do setInterval com o delta já vai pegar esse `lastUpdate` antigo
+        // e subtrair um "bolo" inteiro de tempo de uma só vez, o que é exatamente o que queremos!
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [currentSubject, navigate, isActive]);
 
   useEffect(() => {
     if (!currentSubject) return;
@@ -55,16 +70,31 @@ export function StudySession() {
   useEffect(() => {
     let interval: number;
     if (isActive && timeLeft > 0) {
+      if (!lastUpdate) {
+        setLastUpdate(Date.now());
+      }
+      
       interval = window.setInterval(() => {
-        setTimeLeft((time) => time - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && isActive) {
+        const now = Date.now();
+        if (lastUpdate) {
+          const delta = Math.floor((now - lastUpdate) / 1000);
+          if (delta >= 1) {
+            setTimeLeft((time) => Math.max(0, time - delta));
+            setLastUpdate(now);
+          }
+        }
+      }, 500); // Roda mais rápido para checar o tempo real com mais precisão
+    } else if (timeLeft <= 0 && isActive) {
       setIsActive(false);
       setIsFinished(true);
+      setLastUpdate(null);
       playTimerEndSound();
+    } else {
+      setLastUpdate(null);
     }
+    
     return () => clearInterval(interval);
-  }, [isActive, timeLeft]);
+  }, [isActive, timeLeft, lastUpdate]);
 
   if (!currentSubject) return null;
 
