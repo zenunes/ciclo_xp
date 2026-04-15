@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStudyStore } from '../store/useStudyStore';
 import { Play, Pause, Square, CheckCircle2, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { playTimerEndSound } from '../lib/utils';
+
+type TimerState =
+  | { mode: 'running'; subjectId: string; endAt: number }
+  | { mode: 'paused'; subjectId: string; remainingSeconds: number };
 
 export function StudySession() {
   const { cycle, completeSession, postponeSubject } = useStudyStore();
@@ -12,89 +16,119 @@ export function StudySession() {
   const currentSubjectId = cycle.queue[cycle.currentIndex];
   const currentSubject = cycle.subjects.find(s => s.id === currentSubjectId);
   
-  const storageKey = 'ciclos_xp_current_timer';
+  const storageKey = 'ciclos_xp_timer_state';
+  const endAtRef = useRef<number | null>(null);
+
+  const loadTimerState = (): TimerState | null => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as TimerState;
+      if (parsed?.mode === 'running' && typeof parsed.endAt === 'number' && typeof parsed.subjectId === 'string') return parsed;
+      if (parsed?.mode === 'paused' && typeof parsed.remainingSeconds === 'number' && typeof parsed.subjectId === 'string') return parsed;
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const saveTimerState = (state: TimerState) => {
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  };
+
+  const clearTimerState = () => {
+    localStorage.removeItem(storageKey);
+    endAtRef.current = null;
+  };
+
+  const getDefaultSeconds = () => (currentSubject?.durationMinutes || 0) * 60;
+
   const [timeLeft, setTimeLeft] = useState(() => {
-    const saved = localStorage.getItem(storageKey);
-    return saved ? parseInt(saved, 10) : (currentSubject?.durationMinutes || 0) * 60;
+    const saved = loadTimerState();
+    if (!currentSubject) return 0;
+    if (!saved || saved.subjectId !== currentSubjectId) return getDefaultSeconds();
+    if (saved.mode === 'paused') return Math.max(0, Math.floor(saved.remainingSeconds));
+    const seconds = Math.ceil((saved.endAt - Date.now()) / 1000);
+    return Math.max(0, seconds);
   });
   const [isActive, setIsActive] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [topic, setTopic] = useState('');
-  
-  // Referência para guardar o momento exato em que o timer foi iniciado/retomado
-  const [lastUpdate, setLastUpdate] = useState<number | null>(null);
 
   useEffect(() => {
     if (!currentSubject) {
       navigate('/config');
       return;
     }
-    
-    // Tratamento de visibilidade da página (evitar que o navegador pare o timer completamente)
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isActive) {
-        // Ao voltar para a aba, dizemos que a "última atualização" foi agora,
-        // mas primeiro compensamos o tempo que passou desde a última vez que checamos
-        // Porém, como o React vai re-renderizar, a lógica de deltaTime no setInterval
-        // já faria o cálculo natural de (now - lastUpdate), deduzindo os segundos.
-        // O problema é que o setTimeout para o navegador e o lastUpdate fica desatualizado.
-        // O useEffect do setInterval com o delta já vai pegar esse `lastUpdate` antigo
-        // e subtrair um "bolo" inteiro de tempo de uma só vez, o que é exatamente o que queremos!
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [currentSubject, navigate, isActive]);
+  }, [currentSubject, navigate]);
 
   useEffect(() => {
     if (!currentSubject) return;
-    
-    // Quando a matéria muda (porque o usuário concluiu ou adiou), 
-    // precisamos resetar o timer APENAS se a sessão atual não estiver em andamento
-    // ou se o timeLeft salvo for 0.
-    // Vamos garantir que sempre que a UI renderizar um novo assunto limpo, o timer reinicie.
-    const saved = localStorage.getItem(storageKey);
-    if (!saved) {
-      setTimeLeft(currentSubject.durationMinutes * 60);
+
+    const saved = loadTimerState();
+    if (!saved || saved.subjectId !== currentSubjectId) {
+      clearTimerState();
       setIsActive(false);
       setIsFinished(false);
       setTopic('');
+      setTimeLeft(getDefaultSeconds());
+      return;
     }
-  }, [currentSubject]);
 
-  useEffect(() => {
-    localStorage.setItem(storageKey, timeLeft.toString());
-  }, [timeLeft]);
+    if (saved.mode === 'paused') {
+      endAtRef.current = null;
+      setIsActive(false);
+      setTimeLeft(Math.max(0, Math.floor(saved.remainingSeconds)));
+      return;
+    }
+
+    endAtRef.current = saved.endAt;
+    setIsActive(true);
+    const seconds = Math.ceil((saved.endAt - Date.now()) / 1000);
+    setTimeLeft(Math.max(0, seconds));
+  }, [currentSubject, currentSubjectId]);
 
   useEffect(() => {
     let interval: number;
-    if (isActive && timeLeft > 0) {
-      if (!lastUpdate) {
-        setLastUpdate(Date.now());
-      }
-      
+    if (isActive) {
       interval = window.setInterval(() => {
-        const now = Date.now();
-        if (lastUpdate) {
-          const delta = Math.floor((now - lastUpdate) / 1000);
-          if (delta >= 1) {
-            setTimeLeft((time) => Math.max(0, time - delta));
-            setLastUpdate(now);
-          }
+        if (!endAtRef.current) return;
+        const seconds = Math.ceil((endAtRef.current - Date.now()) / 1000);
+        const next = Math.max(0, seconds);
+        setTimeLeft(next);
+        if (next <= 0) {
+          clearTimerState();
+          setIsActive(false);
+          setIsFinished(true);
+          playTimerEndSound();
         }
-      }, 500); // Roda mais rápido para checar o tempo real com mais precisão
-    } else if (timeLeft <= 0 && isActive) {
-      setIsActive(false);
-      setIsFinished(true);
-      setLastUpdate(null);
-      playTimerEndSound();
-    } else {
-      setLastUpdate(null);
+      }, 250);
     }
-    
     return () => clearInterval(interval);
-  }, [isActive, timeLeft, lastUpdate]);
+  }, [isActive]);
+
+  useEffect(() => {
+    const handler = () => {
+      if (!isActive) return;
+      if (!endAtRef.current) return;
+      const seconds = Math.ceil((endAtRef.current - Date.now()) / 1000);
+      const next = Math.max(0, seconds);
+      setTimeLeft(next);
+      if (next <= 0) {
+        clearTimerState();
+        setIsActive(false);
+        setIsFinished(true);
+        playTimerEndSound();
+      }
+    };
+
+    window.addEventListener('focus', handler);
+    document.addEventListener('visibilitychange', handler);
+    return () => {
+      window.removeEventListener('focus', handler);
+      document.removeEventListener('visibilitychange', handler);
+    };
+  }, [isActive]);
 
   if (!currentSubject) return null;
 
@@ -109,7 +143,7 @@ export function StudySession() {
     if (!topic.trim()) return;
     
     completeSession(topic, currentSubject.durationMinutes);
-    localStorage.removeItem(storageKey);
+    clearTimerState();
     setIsFinished(false);
     setIsActive(false);
     setTopic('');
@@ -118,9 +152,26 @@ export function StudySession() {
 
   const handlePostponeSubject = () => {
     postponeSubject();
-    localStorage.removeItem(storageKey);
+    clearTimerState();
     setIsActive(false);
     setIsFinished(false);
+  };
+
+  const handleToggleTimer = () => {
+    if (!currentSubject) return;
+
+    if (isActive) {
+      const remainingSeconds = timeLeft;
+      saveTimerState({ mode: 'paused', subjectId: currentSubjectId, remainingSeconds });
+      endAtRef.current = null;
+      setIsActive(false);
+      return;
+    }
+
+    const nextEndAt = Date.now() + timeLeft * 1000;
+    endAtRef.current = nextEndAt;
+    saveTimerState({ mode: 'running', subjectId: currentSubjectId, endAt: nextEndAt });
+    setIsActive(true);
   };
 
   return (
@@ -189,7 +240,7 @@ export function StudySession() {
               </button>
 
               <button
-                onClick={() => setIsActive(!isActive)}
+                onClick={handleToggleTimer}
                 className="w-20 h-20 rounded-full text-white flex items-center justify-center shadow-xl shadow-current/20 transition-all active:scale-95"
                 style={{ backgroundColor: currentSubject.color }}
               >
