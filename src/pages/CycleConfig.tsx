@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStudyStore } from '../store/useStudyStore';
-import { Plus, Trash2, Clock, Check, X } from 'lucide-react';
+import { Plus, Trash2, Clock, Check, X, Edit2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 
@@ -19,9 +19,10 @@ const COLORS = [
 ];
 
 export function CycleConfig() {
-  const { cycle, addSubject, removeSubject, startCycle, stopCycle } = useStudyStore();
+  const { cycle, addSubject, removeSubject, updateSubject, startCycle, stopCycle } = useStudyStore();
   const navigate = useNavigate();
   const [isAdding, setIsAdding] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
   const [newSubject, setNewSubject] = useState<{
     name: string;
     color: string;
@@ -46,20 +47,56 @@ export function CycleConfig() {
     navigate('/');
   };
 
-  const handleAdd = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSubject.name.trim()) return;
 
     const duration = typeof newSubject.durationMinutes === 'number' ? newSubject.durationMinutes : parseInt(newSubject.durationMinutes as string) || 60;
     const weight = typeof newSubject.weight === 'number' ? newSubject.weight : parseInt(newSubject.weight as string) || 1;
 
-    addSubject({
-      ...newSubject,
-      durationMinutes: duration,
-      weight: weight
-    });
+    if (editId) {
+      updateSubject(editId, {
+        name: newSubject.name,
+        color: newSubject.color,
+        durationMinutes: duration,
+        weight: weight
+      });
+      setEditId(null);
+    } else {
+      addSubject({
+        name: newSubject.name,
+        color: newSubject.color,
+        durationMinutes: duration,
+        weight: weight
+      });
+    }
+    
     setNewSubject({ name: '', color: COLORS[Math.floor(Math.random() * COLORS.length)], durationMinutes: 60, weight: 1 });
     setIsAdding(false);
+  };
+
+  const handleEdit = (subject: any) => {
+    setNewSubject({
+      name: subject.name,
+      color: subject.color,
+      durationMinutes: subject.durationMinutes,
+      weight: subject.weight || 1,
+    });
+    setEditId(subject.id);
+    setIsAdding(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancel = () => {
+    setIsAdding(false);
+    setEditId(null);
+    setNewSubject({ name: '', color: COLORS[Math.floor(Math.random() * COLORS.length)], durationMinutes: 60, weight: 1 });
+  };
+
+  const handleAddClick = () => {
+    setEditId(null);
+    setNewSubject({ name: '', color: COLORS[Math.floor(Math.random() * COLORS.length)], durationMinutes: 60, weight: 1 });
+    setIsAdding(true);
   };
 
   const totalTime = cycle.subjects.reduce((acc, curr) => acc + curr.durationMinutes, 0);
@@ -84,7 +121,7 @@ export function CycleConfig() {
           </div>
         </div>
         <button
-          onClick={() => setIsAdding(true)}
+          onClick={handleAddClick}
           className="w-full md:w-auto px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 active:scale-95"
         >
           <Plus size={20} />
@@ -119,13 +156,13 @@ export function CycleConfig() {
             animate={{ opacity: 1, y: 0, height: 'auto' }}
             exit={{ opacity: 0, y: -20, height: 0 }}
             className="bg-white dark:bg-zinc-900 p-6 rounded-3xl border border-violet-200 dark:border-zinc-800 shadow-lg relative overflow-hidden"
-            onSubmit={handleAdd}
+            onSubmit={handleSubmit}
           >
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Nova Disciplina</h3>
+              <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{editId ? 'Editar Disciplina' : 'Nova Disciplina'}</h3>
               <button 
                 type="button" 
-                onClick={() => setIsAdding(false)}
+                onClick={handleCancel}
                 className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
               >
                 <X size={24} />
@@ -198,7 +235,7 @@ export function CycleConfig() {
                 type="submit"
                 className="px-8 py-3 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl font-bold transition-all active:scale-95 dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900"
               >
-                Salvar
+                {editId ? 'Salvar Alterações' : 'Salvar'}
               </button>
             </div>
           </motion.form>
@@ -251,12 +288,22 @@ export function CycleConfig() {
                   )}
                 </div>
               </div>
-              <button
-                onClick={() => removeSubject(subject.id)}
-                className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/15 text-red-500 dark:text-red-300 flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-500/25 hover:text-red-600 dark:hover:text-red-200 transition-colors opacity-100 md:opacity-0 group-hover:opacity-100 focus:opacity-100 flex-shrink-0"
-              >
-                <Trash2 size={20} />
-              </button>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => handleEdit(subject)}
+                  className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-500/15 text-violet-500 dark:text-violet-300 flex items-center justify-center hover:bg-violet-100 dark:hover:bg-violet-500/25 hover:text-violet-600 dark:hover:text-violet-200 transition-colors opacity-100 md:opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  title="Editar Disciplina"
+                >
+                  <Edit2 size={20} />
+                </button>
+                <button
+                  onClick={() => removeSubject(subject.id)}
+                  className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/15 text-red-500 dark:text-red-300 flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-500/25 hover:text-red-600 dark:hover:text-red-200 transition-colors opacity-100 md:opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  title="Excluir Disciplina"
+                >
+                  <Trash2 size={20} />
+                </button>
+              </div>
             </motion.div>
           ))}
         </AnimatePresence>
