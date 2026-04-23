@@ -681,52 +681,13 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
 
     const newXp = baseNewXp + extraXp;
     const newLevel = calculateLevel(newXp);
-
-    // 1. Atualizar Perfil
-    await supabase.from('profiles').update({ 
-      xp: newXp, 
-      level: newLevel,
-      current_streak: newStreak,
-      last_study_date: newLastStudyDate
-    }).eq('id', user.id);
-    
-    // 2. Marcar revisão atual como concluída
-    await supabase.from('reviews').update({ completed: true }).eq('id', id);
-
-    // 3. Criar a nova revisão futura (Repetição Espaçada)
-    const nextDueDate = formatISO(addHours(new Date(), daysToAdd * 24));
-    const { data: newReviewData } = await supabase.from('reviews').insert({
-      user_id: user.id,
-      subject_id: reviewToComplete.subjectId,
-      topic: reviewToComplete.topic,
-      due_date: nextDueDate,
-      completed: false,
-    }).select().single();
-
-    // 4. Salvar histórico de revisão como tempo de estudo (estimativa de 10 min por revisão concluída)
-    await supabase.from('study_history').insert({
-      user_id: user.id,
-      subject_id: reviewToComplete.subjectId,
-      duration_minutes: 10,
-    });
-
     const didLevelUp = newLevel > state.user.level;
 
+    // OPTIMISTIC UPDATE: Atualizar estado visualmente primeiro
     set((state) => {
       const updatedReviews = state.reviews.map((r) =>
         r.id === id ? { ...r, completed: true } : r
       );
-      
-      if (newReviewData) {
-        updatedReviews.push({
-          id: newReviewData.id,
-          subjectId: newReviewData.subject_id,
-          topic: newReviewData.topic,
-          dueDate: newReviewData.due_date,
-          completed: newReviewData.completed,
-        });
-      }
-
       return {
         user: { 
           ...state.user,
@@ -740,6 +701,52 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
         dailyQuests: newQuests,
       };
     });
+
+    // Em background: Operações no Banco de Dados
+    try {
+      // 1. Atualizar Perfil
+      await supabase.from('profiles').update({ 
+        xp: newXp, 
+        level: newLevel,
+        current_streak: newStreak,
+        last_study_date: newLastStudyDate
+      }).eq('id', user.id);
+      
+      // 2. Marcar revisão atual como concluída
+      await supabase.from('reviews').update({ completed: true }).eq('id', id);
+
+      // 3. Criar a nova revisão futura (Repetição Espaçada)
+      const nextDueDate = formatISO(addHours(new Date(), daysToAdd * 24));
+      const { data: newReviewData, error } = await supabase.from('reviews').insert({
+        user_id: user.id,
+        subject_id: reviewToComplete.subjectId,
+        topic: reviewToComplete.topic,
+        due_date: nextDueDate,
+        completed: false,
+      }).select().single();
+
+      // 4. Salvar histórico de revisão como tempo de estudo (estimativa de 10 min por revisão concluída)
+      await supabase.from('study_history').insert({
+        user_id: user.id,
+        subject_id: reviewToComplete.subjectId,
+        duration_minutes: 10,
+      });
+
+      // Se criou a revisão futura, adicionar silenciosamente no Zustand
+      if (!error && newReviewData) {
+        set((state) => ({
+          reviews: [...state.reviews, {
+            id: newReviewData.id,
+            subjectId: newReviewData.subject_id,
+            topic: newReviewData.topic,
+            dueDate: newReviewData.due_date,
+            completed: newReviewData.completed,
+          }]
+        }));
+      }
+    } catch (error) {
+      console.error('Erro ao salvar revisão no banco:', error);
+    }
   },
 
   setHasSeenTutorial: async (value: boolean) => {
