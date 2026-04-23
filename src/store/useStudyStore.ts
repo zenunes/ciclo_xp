@@ -4,10 +4,17 @@ import { supabase } from '../lib/supabase';
 
 export interface Subject {
   id: string;
+  cycleId: string;
   name: string;
   color: string;
   durationMinutes: number;
   weight?: number;
+}
+
+export interface CycleConfig {
+  id: string;
+  name: string;
+  subjects: Subject[];
 }
 
 export interface Review {
@@ -42,9 +49,11 @@ interface StudyState {
     oldLevel: number;
     newLevel: number;
   } | null;
+  cycles: CycleConfig[];
+  selectedCycleId: string | null;
   cycle: {
     isActive: boolean;
-    subjects: Subject[];
+    activeCycleId: string | null;
     queue: string[];
     currentIndex: number;
   };
@@ -56,7 +65,11 @@ interface StudyState {
   // Actions
   fetchUserData: () => Promise<void>;
   checkDailyQuests: () => void;
-  addSubject: (subject: Omit<Subject, 'id'>) => Promise<void>;
+  createCycle: (name: string) => Promise<void>;
+  updateCycle: (id: string, name: string) => Promise<void>;
+  deleteCycle: (id: string) => Promise<void>;
+  selectCycle: (id: string) => void;
+  addSubject: (subject: Omit<Subject, 'id' | 'cycleId'>) => Promise<void>;
   removeSubject: (id: string) => Promise<void>;
   updateSubject: (id: string, subject: Partial<Subject>) => Promise<void>;
   startCycle: () => void;
@@ -144,8 +157,8 @@ const loadCycleState = () => {
   return null;
 };
 
-const saveCycleState = (isActive: boolean, queue: string[], currentIndex: number) => {
-  localStorage.setItem('ciclos_xp_cycle_state', JSON.stringify({ isActive, queue, currentIndex }));
+const saveCycleState = (isActive: boolean, activeCycleId: string | null, queue: string[], currentIndex: number) => {
+  localStorage.setItem('ciclos_xp_cycle_state', JSON.stringify({ isActive, activeCycleId, queue, currentIndex }));
 };
 
 export const useStudyStore = create<StudyState>()((set, get) => ({
@@ -157,9 +170,11 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     hasSeenTutorial: false,
   },
   levelUpData: null,
+  cycles: [],
+  selectedCycleId: null,
   cycle: {
     isActive: false,
-    subjects: [],
+    activeCycleId: null,
     queue: [],
     currentIndex: 0,
   },
@@ -182,19 +197,41 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     }
 
     try {
-      const [profileRes, subjectsRes, reviewsRes] = await Promise.all([
+      const [profileRes, cyclesRes, subjectsRes, reviewsRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).single(),
+        supabase.from('cycles').select('*').eq('user_id', user.id).order('created_at', { ascending: true }),
         supabase.from('subjects').select('*').eq('user_id', user.id).order('created_at', { ascending: true }),
         supabase.from('reviews').select('*').eq('user_id', user.id).order('due_date', { ascending: true })
       ]);
 
-      const formattedSubjects = subjectsRes.data?.map((s: { id: string, name: string, color: string, duration_minutes: number, weight?: number }) => ({
+      const formattedSubjects = subjectsRes.data?.map((s: { id: string, cycle_id: string, name: string, color: string, duration_minutes: number, weight?: number }) => ({
         id: s.id,
+        cycleId: s.cycle_id,
         name: s.name,
         color: s.color,
         durationMinutes: s.duration_minutes,
         weight: s.weight,
       })) || [];
+
+      let formattedCycles: CycleConfig[] = cyclesRes.data?.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+        subjects: formattedSubjects.filter((s: Subject) => s.cycleId === c.id)
+      })) || [];
+
+      const savedCycle = loadCycleState();
+      
+      // If there are cycles but no selected cycle, select the first one
+      const selectedCycleId = formattedCycles.length > 0 ? formattedCycles[0].id : null;
+      const activeCycleId = savedCycle?.activeCycleId || null;
+
+      let queue = savedCycle?.queue || [];
+      if (queue.length === 0 && activeCycleId) {
+        const activeCycle = formattedCycles.find(c => c.id === activeCycleId);
+        if (activeCycle && activeCycle.subjects.length > 0) {
+          queue = generateQueue(activeCycle.subjects);
+        }
+      }
 
       const formattedReviews = reviewsRes.data?.map((r: { id: string, subject_id: string, topic: string, due_date: string, completed: boolean }) => ({
         id: r.id,
@@ -204,12 +241,6 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
         completed: r.completed,
       })) || [];
 
-      const savedCycle = loadCycleState();
-      let queue = savedCycle?.queue || [];
-      if (queue.length === 0 && formattedSubjects.length > 0) {
-        queue = generateQueue(formattedSubjects);
-      }
-
       set({
         user: { 
           xp: profileRes.data?.xp || 0, 
@@ -218,9 +249,11 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
           lastStudyDate: profileRes.data?.last_study_date || null,
           hasSeenTutorial: profileRes.data?.has_seen_tutorial || false,
         },
+        cycles: formattedCycles,
+        selectedCycleId,
         cycle: { 
           isActive: savedCycle?.isActive || false, 
-          subjects: formattedSubjects, 
+          activeCycleId: activeCycleId,
           queue: queue,
           currentIndex: savedCycle?.currentIndex || 0 
         },
@@ -233,12 +266,68 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     }
   },
 
-  addSubject: async (subjectData) => {
+  createCycle: async (name) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    const { data, error } = await supabase.from('cycles').insert({
+      user_id: user.id,
+      name,
+    }).select().single();
+
+    if (!error && data) {
+      set((state) => {
+        const newCycle: CycleConfig = { id: data.id, name: data.name, subjects: [] };
+        const newCycles = [...state.cycles, newCycle];
+        return {
+          cycles: newCycles,
+          selectedCycleId: data.id, // Auto select the new cycle
+        };
+      });
+    }
+  },
+
+  updateCycle: async (id, name) => {
+    const { error } = await supabase.from('cycles').update({ name }).eq('id', id);
+    if (!error) {
+      set((state) => ({
+        cycles: state.cycles.map(c => c.id === id ? { ...c, name } : c)
+      }));
+    }
+  },
+
+  deleteCycle: async (id) => {
+    const { error } = await supabase.from('cycles').delete().eq('id', id);
+    if (!error) {
+      set((state) => {
+        const newCycles = state.cycles.filter(c => c.id !== id);
+        
+        // Se apagou o ciclo ativo, para ele
+        let newCycleState = state.cycle;
+        if (state.cycle.activeCycleId === id) {
+          newCycleState = { isActive: false, activeCycleId: null, queue: [], currentIndex: 0 };
+          saveCycleState(false, null, [], 0);
+        }
+        
+        return {
+          cycles: newCycles,
+          selectedCycleId: state.selectedCycleId === id ? (newCycles[0]?.id || null) : state.selectedCycleId,
+          cycle: newCycleState
+        };
+      });
+    }
+  },
+
+  selectCycle: (id) => set({ selectedCycleId: id }),
+
+  addSubject: async (subjectData) => {
+    const state = get();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user || !state.selectedCycleId) return;
+
     const { data, error } = await supabase.from('subjects').insert({
       user_id: user.id,
+      cycle_id: state.selectedCycleId,
       name: subjectData.name,
       color: subjectData.color,
       duration_minutes: subjectData.durationMinutes,
@@ -248,18 +337,33 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     if (!error && data) {
       const newSubject: Subject = {
         id: data.id,
+        cycleId: data.cycle_id,
         name: data.name,
         color: data.color,
         durationMinutes: data.duration_minutes,
         weight: data.weight,
       };
       set((state) => {
-        const newSubjects = [...state.cycle.subjects, newSubject];
-        const newQueue = state.cycle.isActive ? state.cycle.queue : generateQueue(newSubjects);
+        const updatedCycles = state.cycles.map(c => {
+          if (c.id === newSubject.cycleId) {
+            return { ...c, subjects: [...c.subjects, newSubject] };
+          }
+          return c;
+        });
+
+        // Se o ciclo sendo editado é o ciclo ativo, atualizamos a fila
+        let newQueue = state.cycle.queue;
+        if (state.cycle.isActive && state.cycle.activeCycleId === newSubject.cycleId) {
+          // Mantém a fila atual (como estava antes)
+        } else if (!state.cycle.isActive && state.cycle.activeCycleId === newSubject.cycleId) {
+          const activeCycle = updatedCycles.find(c => c.id === state.cycle.activeCycleId);
+          newQueue = activeCycle ? generateQueue(activeCycle.subjects) : [];
+        }
+
         return {
+          cycles: updatedCycles,
           cycle: {
             ...state.cycle,
-            subjects: newSubjects,
             queue: newQueue,
           },
         };
@@ -268,25 +372,46 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
   },
 
   removeSubject: async (id) => {
+    const state = get();
+    const cycleWithSubject = state.cycles.find(c => c.subjects.some(s => s.id === id));
+    if (!cycleWithSubject) return;
+
     const { error } = await supabase.from('subjects').delete().eq('id', id);
     if (!error) {
       set((state) => {
-        const newSubjects = state.cycle.subjects.filter((s) => s.id !== id);
-        const newQueue = state.cycle.isActive ? state.cycle.queue.filter(qId => qId !== id) : generateQueue(newSubjects);
-        const newIsActive = newSubjects.length === 0 ? false : state.cycle.isActive;
-        const newCurrentIndex = state.cycle.currentIndex >= newQueue.length ? 0 : state.cycle.currentIndex;
+        const updatedCycles = state.cycles.map(c => {
+          if (c.id === cycleWithSubject.id) {
+            return { ...c, subjects: c.subjects.filter(s => s.id !== id) };
+          }
+          return c;
+        });
+
+        const newSubjects = updatedCycles.find(c => c.id === cycleWithSubject.id)?.subjects || [];
         
-        if (newIsActive) {
-          saveCycleState(newIsActive, newQueue, newCurrentIndex);
+        let newQueue = state.cycle.queue;
+        let newIsActive = state.cycle.isActive;
+        let newCurrentIndex = state.cycle.currentIndex;
+
+        if (state.cycle.activeCycleId === cycleWithSubject.id) {
+          newQueue = state.cycle.isActive ? state.cycle.queue.filter(qId => qId !== id) : generateQueue(newSubjects);
+          newIsActive = newSubjects.length === 0 ? false : state.cycle.isActive;
+          newCurrentIndex = state.cycle.currentIndex >= newQueue.length ? 0 : state.cycle.currentIndex;
+          
+          if (newIsActive) {
+            saveCycleState(newIsActive, state.cycle.activeCycleId, newQueue, newCurrentIndex);
+          } else {
+            saveCycleState(false, null, [], 0);
+          }
         }
         
         return {
+          cycles: updatedCycles,
           cycle: {
             ...state.cycle,
-            subjects: newSubjects,
             queue: newQueue,
             currentIndex: newCurrentIndex,
             isActive: newIsActive,
+            activeCycleId: newIsActive ? state.cycle.activeCycleId : null,
           },
         };
       });
@@ -294,6 +419,10 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
   },
 
   updateSubject: async (id, subjectData) => {
+    const state = get();
+    const cycleWithSubject = state.cycles.find(c => c.subjects.some(s => s.id === id));
+    if (!cycleWithSubject) return;
+
     const updates: { name?: string; color?: string; duration_minutes?: number; weight?: number } = {};
     if (subjectData.name) updates.name = subjectData.name;
     if (subjectData.color) updates.color = subjectData.color;
@@ -303,14 +432,26 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     const { error } = await supabase.from('subjects').update(updates).eq('id', id);
     if (!error) {
       set((state) => {
-        const newSubjects = state.cycle.subjects.map((s) =>
-          s.id === id ? { ...s, ...subjectData } : s
-        );
-        const newQueue = state.cycle.isActive ? state.cycle.queue : generateQueue(newSubjects);
+        const updatedCycles = state.cycles.map(c => {
+          if (c.id === cycleWithSubject.id) {
+            return {
+              ...c,
+              subjects: c.subjects.map(s => s.id === id ? { ...s, ...subjectData } : s)
+            };
+          }
+          return c;
+        });
+
+        let newQueue = state.cycle.queue;
+        if (state.cycle.activeCycleId === cycleWithSubject.id) {
+          const newSubjects = updatedCycles.find(c => c.id === cycleWithSubject.id)?.subjects || [];
+          newQueue = state.cycle.isActive ? state.cycle.queue : generateQueue(newSubjects);
+        }
+
         return {
+          cycles: updatedCycles,
           cycle: {
             ...state.cycle,
-            subjects: newSubjects,
             queue: newQueue,
           },
         };
@@ -320,12 +461,17 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
 
   startCycle: () =>
     set((state) => {
-      const queue = generateQueue(state.cycle.subjects);
-      saveCycleState(true, queue, 0);
+      if (!state.selectedCycleId) return state;
+      const activeCycle = state.cycles.find(c => c.id === state.selectedCycleId);
+      if (!activeCycle) return state;
+
+      const queue = generateQueue(activeCycle.subjects);
+      saveCycleState(true, state.selectedCycleId, queue, 0);
       return {
         cycle: {
           ...state.cycle,
           isActive: true,
+          activeCycleId: state.selectedCycleId,
           queue,
           currentIndex: 0,
         },
@@ -334,12 +480,14 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
 
   stopCycle: () =>
     set((state) => {
-      saveCycleState(false, state.cycle.queue, 0);
+      saveCycleState(false, null, [], 0);
       return {
         cycle: {
           ...state.cycle,
           isActive: false,
+          activeCycleId: null,
           currentIndex: 0,
+          queue: [],
         },
       };
     }),
@@ -348,17 +496,15 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     set((state) => {
       const queue = [...state.cycle.queue];
       if (queue.length > 1) {
-        // Remove current subject and push to end of queue
         const currentSubjectId = queue.splice(state.cycle.currentIndex, 1)[0];
         queue.push(currentSubjectId);
         
-        saveCycleState(state.cycle.isActive, queue, state.cycle.currentIndex);
+        saveCycleState(state.cycle.isActive, state.cycle.activeCycleId, queue, state.cycle.currentIndex);
         
         return {
           cycle: {
             ...state.cycle,
             queue,
-            // currentIndex remains the same, but it now points to the next subject
           },
         };
       }
@@ -368,10 +514,13 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
   completeSession: async (topic, durationMinutes) => {
     const state = get();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user || !state.cycle.activeCycleId) return;
+
+    const activeCycle = state.cycles.find(c => c.id === state.cycle.activeCycleId);
+    if (!activeCycle) return;
 
     const currentSubjectId = state.cycle.queue[state.cycle.currentIndex];
-    const currentSubject = state.cycle.subjects.find(s => s.id === currentSubjectId);
+    const currentSubject = activeCycle.subjects.find(s => s.id === currentSubjectId);
     
     if (!currentSubject) return;
 
@@ -442,7 +591,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     }).select().single();
 
     const nextIndex = (state.cycle.currentIndex + 1) % state.cycle.queue.length;
-    saveCycleState(state.cycle.isActive, state.cycle.queue, nextIndex);
+    saveCycleState(state.cycle.isActive, state.cycle.activeCycleId, state.cycle.queue, nextIndex);
     
     const didLevelUp = newLevel > state.user.level;
 
