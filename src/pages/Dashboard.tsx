@@ -66,27 +66,37 @@ export function Dashboard() {
     <div className="space-y-8">
       {/* RPG Character Card */}
       <div className={`tour-rpg-card relative overflow-hidden rounded-3xl p-8 border shadow-lg bg-gradient-to-br ${colorStyles[currentClass.color]}`}>
+        {/* Background Decorative Emojis */}
+        <div className="absolute -top-10 -right-10 text-[180px] opacity-10 select-none pointer-events-none rotate-12">
+          {currentClass.emoji}
+        </div>
         <div className={`absolute top-0 right-0 w-64 h-64 bg-gradient-to-br ${glowColors[currentClass.color]} to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2`} />
         
         <div className="relative flex flex-col md:flex-row items-center gap-6">
-          <div className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/20">
-            <ClassIcon size={40} className="text-white" />
+          <div className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/20 shadow-xl relative group">
+            <ClassIcon size={40} className="text-white drop-shadow-md relative z-10" />
+            <div className="absolute -bottom-2 -right-2 text-2xl drop-shadow-md animate-bounce z-20">
+              {currentClass.emoji}
+            </div>
           </div>
           
           <div className="flex-1 w-full text-center md:text-left">
-            <p className="text-white/60 font-medium mb-1">Classe Atual</p>
-            <h1 className="text-3xl font-black text-white mb-2">
-              {currentClass.name} <span className="text-white/40 text-2xl font-medium">Lv. {user.level}</span>
+            <p className="text-white/80 font-medium mb-1 uppercase tracking-wider text-sm flex items-center justify-center md:justify-start gap-2">
+              <Flame size={14} className="text-orange-400" /> Classe Atual
+            </p>
+            <h1 className="text-3xl font-black text-white mb-2 drop-shadow-sm flex items-center justify-center md:justify-start gap-3">
+              {currentClass.name} 
+              <span className="text-white/60 text-2xl font-bold bg-black/20 px-3 py-1 rounded-xl">Lv. {user.level}</span>
             </h1>
             
             <div className="mt-4">
-              <div className="flex justify-between text-sm font-medium text-white/80 mb-2">
-                <span>{user.xp} XP Total</span>
-                <span>Faltam {progress.xpRemaining} XP para o Nível {user.level + 1}</span>
+              <div className="flex justify-between text-sm font-bold text-white/90 mb-2">
+                <span>{user.xp.toLocaleString()} XP Total</span>
+                <span>Faltam {progress.xpRemaining.toLocaleString()} XP para o Nível {user.level + 1}</span>
               </div>
-              <div className="w-full h-3 bg-black/40 rounded-full overflow-hidden border border-white/10">
+              <div className="w-full h-3 bg-black/40 rounded-full overflow-hidden border border-white/10 shadow-inner">
                 <div 
-                  className={`h-full rounded-full transition-all duration-1000 ${progressColors[currentClass.color]}`}
+                  className={`h-full rounded-full transition-all duration-1000 ${progressColors[currentClass.color]} shadow-[0_0_10px_rgba(255,255,255,0.5)]`}
                   style={{ width: `${progress.progressPercentage}%` }}
                 />
               </div>

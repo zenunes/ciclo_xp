@@ -6,19 +6,20 @@ export interface CharacterClass {
   maxLevel: number;
   icon: LucideIcon;
   color: 'zinc' | 'blue' | 'orange' | 'violet' | 'amber' | 'emerald' | 'red' | 'cyan' | 'fuchsia' | 'rose';
+  emoji: string;
 }
 
 export const CHARACTER_CLASSES: CharacterClass[] = [
-  { name: 'Aprendiz', minLevel: 1, maxLevel: 9, icon: Book, color: 'zinc' },
-  { name: 'Escudeiro', minLevel: 10, maxLevel: 19, icon: Shield, color: 'blue' },
-  { name: 'Guerreiro', minLevel: 20, maxLevel: 29, icon: Sword, color: 'orange' },
-  { name: 'Cavaleiro', minLevel: 30, maxLevel: 39, icon: Crown, color: 'violet' },
-  { name: 'Mestre', minLevel: 40, maxLevel: 49, icon: Sparkles, color: 'amber' },
-  { name: 'Grão-Mestre', minLevel: 50, maxLevel: 59, icon: Medal, color: 'emerald' },
-  { name: 'Herói', minLevel: 60, maxLevel: 69, icon: Flame, color: 'red' },
-  { name: 'Lenda', minLevel: 70, maxLevel: 79, icon: Star, color: 'cyan' },
-  { name: 'Mítico', minLevel: 80, maxLevel: 89, icon: Zap, color: 'fuchsia' },
-  { name: 'Divino', minLevel: 90, maxLevel: Infinity, icon: Sun, color: 'rose' },
+  { name: 'Aprendiz', minLevel: 1, maxLevel: 9, icon: Book, color: 'zinc', emoji: '📚' },
+  { name: 'Escudeiro', minLevel: 10, maxLevel: 19, icon: Shield, color: 'blue', emoji: '🛡️' },
+  { name: 'Guerreiro', minLevel: 20, maxLevel: 29, icon: Sword, color: 'orange', emoji: '⚔️' },
+  { name: 'Cavaleiro', minLevel: 30, maxLevel: 39, icon: Crown, color: 'violet', emoji: '👑' },
+  { name: 'Mestre', minLevel: 40, maxLevel: 49, icon: Sparkles, color: 'amber', emoji: '✨' },
+  { name: 'Grão-Mestre', minLevel: 50, maxLevel: 59, icon: Medal, color: 'emerald', emoji: '🎖️' },
+  { name: 'Herói', minLevel: 60, maxLevel: 69, icon: Flame, color: 'red', emoji: '🔥' },
+  { name: 'Lenda', minLevel: 70, maxLevel: 79, icon: Star, color: 'cyan', emoji: '⭐' },
+  { name: 'Mítico', minLevel: 80, maxLevel: 89, icon: Zap, color: 'fuchsia', emoji: '⚡' },
+  { name: 'Divino', minLevel: 90, maxLevel: Infinity, icon: Sun, color: 'rose', emoji: '☀️' },
 ];
 
 export function calculateLevel(xp: number): number {
