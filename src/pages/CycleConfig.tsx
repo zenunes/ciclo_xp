@@ -223,7 +223,7 @@ export function CycleConfig() {
                 placeholder="Nome do novo ciclo..."
                 value={newCycleName}
                 onChange={e => setNewCycleName(e.target.value)}
-                className="flex-1 px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-500 transition-colors"
+                className="flex-1 px-4 py-2 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-xl text-sm font-medium focus:outline-none focus:border-indigo-500 transition-colors"
                 autoFocus
               />
               <button type="submit" className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-xl text-sm hover:bg-indigo-700 transition-colors">
