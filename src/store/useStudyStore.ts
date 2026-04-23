@@ -134,16 +134,55 @@ const saveDailyQuests = (quests: DailyQuest[]) => {
 
 const generateQueue = (subjects: Subject[]): string[] => {
   if (subjects.length === 0) return [];
-  const maxWeight = Math.max(...subjects.map(s => s.weight || 1));
+  
+  const totalWeight = subjects.reduce((sum, s) => sum + (s.weight || 1), 0);
   const queue: string[] = [];
   
-  for (let i = 1; i <= maxWeight; i++) {
-    subjects.forEach(s => {
-      if ((s.weight || 1) >= i) {
-        queue.push(s.id);
+  // Algoritmo de Espaçamento Fracionado (Fractional Spacing / D'Hondt adaptation)
+  // Calcula o 'passo' ideal para cada matéria aparecer na fila e tenta distribuí-las o mais distante possível.
+  const targets = subjects.map(s => {
+    const w = s.weight || 1;
+    const step = totalWeight / w;
+    return {
+      id: s.id,
+      weight: w,
+      step: step,
+      target: step / 2, // Ponto de partida
+      remaining: w
+    };
+  });
+  
+  let lastId: string | null = null;
+  
+  for (let i = 0; i < totalWeight; i++) {
+    // Filtra as matérias que ainda precisam ser alocadas
+    const available = targets.filter(t => t.remaining > 0);
+    if (available.length === 0) break;
+    
+    // Ordena para pegar a matéria que está mais "atrasada" para aparecer (menor target)
+    available.sort((a, b) => {
+      // Diferença significativa no target
+      if (Math.abs(a.target - b.target) > 0.0001) {
+        return a.target - b.target;
       }
+      
+      // Critério de desempate 1: Evitar repetir a mesma matéria duas vezes seguidas
+      if (a.id !== lastId && b.id === lastId) return -1;
+      if (b.id !== lastId && a.id === lastId) return 1;
+      
+      // Critério de desempate 2: Matérias com maior peso ganham a vaga
+      return b.weight - a.weight;
     });
+    
+    const selected = available[0];
+    queue.push(selected.id);
+    
+    // Atualiza o estado da matéria selecionada
+    selected.target += selected.step;
+    selected.remaining -= 1;
+    lastId = selected.id;
   }
+  
   return queue;
 };
 
