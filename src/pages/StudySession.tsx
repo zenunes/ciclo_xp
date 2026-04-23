@@ -10,11 +10,13 @@ type TimerState =
   | { mode: 'paused'; subjectId: string; remainingSeconds: number };
 
 export function StudySession() {
-  const { cycle, completeSession, postponeSubject } = useStudyStore();
+  const { cycle, cycles, completeSession, postponeSubject } = useStudyStore();
   const navigate = useNavigate();
   
   const currentSubjectId = cycle.queue[cycle.currentIndex];
-  const currentSubject = cycle.subjects.find(s => s.id === currentSubjectId);
+  
+  const activeCycle = cycles.find(c => c.id === cycle.activeCycleId);
+  const currentSubject = activeCycle?.subjects.find(s => s.id === currentSubjectId);
   
   const storageKey = 'ciclos_xp_timer_state';
   const endAtRef = useRef<number | null>(null);
