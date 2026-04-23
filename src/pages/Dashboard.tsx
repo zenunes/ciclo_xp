@@ -7,11 +7,15 @@ import { getCurrentClass, getLevelProgress } from '../lib/rpg';
 import { DailyMissions } from '../components/DailyMissions';
 
 export function Dashboard() {
-  const { user, cycle, reviews } = useStudyStore();
+  const { user, cycle, cycles, selectedCycleId, reviews } = useStudyStore();
   const navigate = useNavigate();
 
+  const activeCycle = cycles.find(c => c.id === cycle.activeCycleId);
+  const selectedCycle = cycles.find(c => c.id === selectedCycleId);
+  const displayCycle = activeCycle || selectedCycle; // Show active cycle if running, otherwise show selected
+  
   const nextSubjectId = cycle.queue[cycle.currentIndex];
-  const nextSubject = cycle.subjects.find(s => s.id === nextSubjectId);
+  const nextSubject = activeCycle?.subjects.find(s => s.id === nextSubjectId);
   const pendingReviews = reviews.filter((r) => !r.completed);
   const urgentReviews = pendingReviews.filter((r) => isPast(parseISO(r.dueDate)));
 
@@ -118,8 +122,8 @@ export function Dashboard() {
             <Clock size={24} />
           </div>
           <div>
-            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Total de Disciplinas</p>
-            <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{cycle.subjects.length}</p>
+            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Disciplinas (Ciclo Atual)</p>
+            <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{displayCycle?.subjects.length || 0}</p>
           </div>
         </div>
       </div>
@@ -134,6 +138,11 @@ export function Dashboard() {
             
             {nextSubject ? (
               <div className="relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xs font-bold px-2 py-1 rounded-md bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300">
+                    Ciclo: {activeCycle?.name}
+                  </span>
+                </div>
                 <div 
                   className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 text-white font-bold text-xl shadow-lg"
                   style={{ backgroundColor: nextSubject.color }}
@@ -183,7 +192,15 @@ export function Dashboard() {
 
             <div className="space-y-4">
               {urgentReviews.slice(0, 4).map((review) => {
-                const subject = cycle.subjects.find((s) => s.id === review.subjectId);
+                let subject;
+                for (const c of cycles) {
+                  const s = c.subjects.find(sub => sub.id === review.subjectId);
+                  if (s) {
+                    subject = s;
+                    break;
+                  }
+                }
+                
                 return (
                   <div key={review.id} className="flex items-center justify-between p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950/40 border border-zinc-100 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
                     <div className="flex items-center gap-4">

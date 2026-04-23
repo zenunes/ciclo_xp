@@ -1,4 +1,4 @@
-import { RefreshCw, Brain, Flame, Target, Play, Sword } from 'lucide-react';
+import { RefreshCw, Brain, Flame, Target, Play, Sword, LayoutList, CheckSquare, Activity, Moon } from 'lucide-react';
 import { CHARACTER_CLASSES } from '../lib/rpg';
 import { useStudyStore } from '../store/useStudyStore';
 
@@ -31,25 +31,25 @@ export function Guide() {
           <div className="w-12 h-12 bg-violet-100 dark:bg-violet-500/15 text-violet-600 dark:text-violet-300 rounded-xl flex items-center justify-center">
             <RefreshCw size={24} />
           </div>
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">1. O Método de Ciclos</h2>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">1. O Método de Ciclos Inteligente</h2>
         </div>
         
         <div className="space-y-4 text-zinc-600 dark:text-zinc-300 leading-relaxed relative">
           <p>
-            Esqueça o cronograma tradicional de "Segunda é dia de Matemática, Terça é História". O método de ciclos funciona como uma <strong>roda contínua de disciplinas</strong>.
+            Esqueça o cronograma tradicional de "Segunda é dia de Matemática, Terça é História". O método de ciclos funciona como uma <strong>roda contínua de disciplinas</strong> adaptável a imprevistos.
           </p>
           <ul className="space-y-3 mt-4">
             <li className="flex items-start gap-3">
               <Target className="w-5 h-5 text-violet-500 shrink-0 mt-0.5" />
-              <span>Você define a ordem das matérias e o tempo (ou peso) de cada uma.</span>
+              <span><strong>Múltiplos Ciclos:</strong> Você pode criar um ciclo para "Concurso" e outro para "Faculdade" e alternar entre eles sem perder o progresso.</span>
             </li>
             <li className="flex items-start gap-3">
               <Target className="w-5 h-5 text-violet-500 shrink-0 mt-0.5" />
-              <span>Você estuda a disciplina da vez. Terminou? Passa para a próxima da fila.</span>
+              <span><strong>Pesos e Fila (Round-Robin):</strong> Se você configurar "Português" com peso 2 e "Inglês" com peso 1, Português aparecerá duas vezes na rodada antes do ciclo reiniciar!</span>
             </li>
             <li className="flex items-start gap-3">
               <Target className="w-5 h-5 text-violet-500 shrink-0 mt-0.5" />
-              <span><strong>A maior vantagem:</strong> Se imprevistos acontecerem e você não puder estudar na terça-feira, na quarta você simplesmente continua de onde parou. Sem culpa, sem matérias atrasadas!</span>
+              <span><strong>Cronômetro Persistente e Adiar:</strong> Fechou a aba no meio dos estudos? O cronômetro continua de onde parou matematicamente! Precisou pular a matéria? Clique em "Adiar" e ela vai para o final da fila sem prejudicar a rodada.</span>
             </li>
           </ul>
         </div>
@@ -104,13 +104,35 @@ export function Guide() {
       </section>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Section 3: Revisões */}
+        {/* Section 3: Missões Diárias */}
+        <section className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-500/15 text-blue-600 dark:text-blue-300 rounded-xl flex items-center justify-center">
+              <CheckSquare size={24} />
+            </div>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">3. Missões Diárias</h2>
+          </div>
+          
+          <div className="space-y-4 text-zinc-600 dark:text-zinc-300 text-sm">
+            <p>
+              Todos os dias à meia-noite, o sistema gera <strong>3 novas Missões Diárias (Daily Quests)</strong> aleatórias para você cumprir.
+            </p>
+            <p>
+              Essas missões variam entre bater metas de tempo de estudo (ex: 60 minutos), completar X blocos de sessões, ou concluir X revisões. 
+            </p>
+            <p className="font-bold text-blue-600 dark:text-blue-400 mt-4">
+              Cumprir missões é a forma mais rápida de ganhar XP extra e acelerar o nível da sua Classe RPG!
+            </p>
+          </div>
+        </section>
+
+        {/* Section 4: Revisões */}
         <section className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 rounded-xl flex items-center justify-center">
               <Brain size={24} />
             </div>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Revisões Inteligentes</h2>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">4. Revisões (Repetição Espaçada)</h2>
           </div>
           
           <div className="space-y-4 text-zinc-600 dark:text-zinc-300 text-sm">
@@ -118,23 +140,23 @@ export function Guide() {
               Ao terminar uma sessão, o sistema agenda automaticamente uma revisão para as próximas 24h.
             </p>
             <p>
-              Quando você faz a revisão, você avalia o quão difícil foi lembrar o conteúdo:
+              Quando a revisão aparece, você avalia o quão difícil foi lembrar o conteúdo. O botão atualiza o card na hora:
             </p>
             <ul className="space-y-2 mt-2 font-medium">
               <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-500"></span> Fácil: Volta daqui a 7 dias (XP menor)</li>
               <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-amber-500"></span> Médio: Volta daqui a 3 dias (XP normal)</li>
-              <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500"></span> Difícil: Volta amanhã (XP bônus)</li>
+              <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500"></span> Difícil: Volta amanhã (XP bônus de incentivo)</li>
             </ul>
           </div>
         </section>
 
-        {/* Section 4: Ofensiva */}
+        {/* Section 5: Ofensiva */}
         <section className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-12 h-12 bg-orange-100 dark:bg-orange-500/15 text-orange-500 dark:text-orange-300 rounded-xl flex items-center justify-center">
               <Flame size={24} />
             </div>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Ofensiva (Streaks)</h2>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">5. Ofensiva (Streaks)</h2>
           </div>
           
           <div className="space-y-4 text-zinc-600 dark:text-zinc-300 text-sm">
@@ -146,6 +168,31 @@ export function Guide() {
             </p>
             <p className="font-bold text-orange-600 mt-4">
               Mantenha o ritmo para criar o hábito!
+            </p>
+          </div>
+        </section>
+
+        {/* Section 6: Estatísticas Avançadas */}
+        <section className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-12 h-12 bg-fuchsia-100 dark:bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-300 rounded-xl flex items-center justify-center">
+              <Activity size={24} />
+            </div>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">6. Estatísticas & Modo Escuro</h2>
+          </div>
+          
+          <div className="space-y-4 text-zinc-600 dark:text-zinc-300 text-sm">
+            <p>
+              Acompanhe seu desempenho detalhado na aba <strong>Estatísticas</strong>.
+            </p>
+            <ul className="space-y-2 mt-2 font-medium">
+              <li className="flex items-start gap-2"><span className="w-1.5 h-1.5 rounded-full bg-fuchsia-500 mt-1.5 shrink-0"></span> <strong>Gráficos:</strong> Veja barras de tempo (7 dias) e pizza de distribuição.</li>
+              <li className="flex items-start gap-2"><span className="w-1.5 h-1.5 rounded-full bg-fuchsia-500 mt-1.5 shrink-0"></span> <strong>Radar de Força:</strong> Gráfico de "Teia" que mede a proficiência das suas matérias baseado em horas e revisões.</li>
+              <li className="flex items-start gap-2"><span className="w-1.5 h-1.5 rounded-full bg-fuchsia-500 mt-1.5 shrink-0"></span> <strong>Mapa de Calor:</strong> Grid verde ao estilo GitHub para acompanhar sua consistência nos últimos 6 meses.</li>
+            </ul>
+            <p className="pt-2 flex items-center gap-2">
+              <Moon size={16} className="text-fuchsia-500" />
+              Toda a interface suporta <strong>Modo Escuro profundo</strong> (Dark Mode) para proteger seus olhos à noite.
             </p>
           </div>
         </section>

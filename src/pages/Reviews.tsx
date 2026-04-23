@@ -4,14 +4,22 @@ import { formatDistanceToNow, isPast, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export function Reviews() {
-  const { cycle, reviews, completeReview } = useStudyStore();
+  const { cycle, cycles, reviews, completeReview } = useStudyStore();
 
   const pendingReviews = reviews.filter((r) => !r.completed);
   const urgentReviews = pendingReviews.filter((r) => isPast(parseISO(r.dueDate)));
   const upcomingReviews = pendingReviews.filter((r) => !isPast(parseISO(r.dueDate)));
 
   const renderReviewItem = (review: any) => {
-    const subject = cycle.subjects.find((s) => s.id === review.subjectId);
+    let subject;
+    for (const c of cycles) {
+      const s = c.subjects.find(sub => sub.id === review.subjectId);
+      if (s) {
+        subject = s;
+        break;
+      }
+    }
+    
     const isUrgent = isPast(parseISO(review.dueDate));
 
     return (

@@ -8,8 +8,12 @@ import { BarChart3, PieChart as PieChartIcon, Activity, Swords } from 'lucide-re
 import { Heatmap } from '../components/Heatmap';
 
 export function Analytics() {
-  const { cycle, reviews } = useStudyStore();
+  const { cycle, cycles, selectedCycleId, reviews } = useStudyStore();
   const [historyData, setHistoryData] = useState<any[]>([]);
+
+  const activeCycle = cycles.find(c => c.id === cycle.activeCycleId);
+  const selectedCycle = cycles.find(c => c.id === selectedCycleId);
+  const displayCycle = activeCycle || selectedCycle; // Show active cycle if running, otherwise show selected
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -70,7 +74,7 @@ export function Analytics() {
   const subjectDistribution: Record<string, { name: string, value: number, color: string }> = {};
 
   last7DaysData.forEach((entry) => {
-    const subject = cycle.subjects.find(s => s.id === entry.subject_id);
+    const subject = displayCycle?.subjects.find(s => s.id === entry.subject_id);
     if (subject) {
       if (!subjectDistribution[subject.id]) {
         subjectDistribution[subject.id] = {
@@ -102,7 +106,7 @@ export function Analytics() {
   // 4. Processar dados para o Gráfico de Força (Radar Chart)
   // Força = (Tempo Total em minutos / 60) * 10 + (Revisões Concluídas * 20)
   // Normalizamos para no máximo 100 para o gráfico
-  const radarData = cycle.subjects.map(subject => {
+  const radarData = (displayCycle?.subjects || []).map(subject => {
     // Pegar tempo estudado de todo o historyData (180 dias)
     const totalMinutes = historyData
       .filter(entry => entry.subject_id === subject.id)
@@ -128,6 +132,12 @@ export function Analytics() {
       <div>
         <h1 className="text-3xl font-black text-zinc-900 dark:text-zinc-100">Estatísticas</h1>
         <p className="text-zinc-500 dark:text-zinc-400 mt-2">Analise seu desempenho e distribuição de tempo de estudo.</p>
+      </div>
+
+      <div className="bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 p-4 rounded-2xl flex items-center justify-between">
+        <span className="text-indigo-800 dark:text-indigo-300 font-medium text-sm">
+          Exibindo estatísticas para as disciplinas do ciclo: <strong>{displayCycle?.name || 'Nenhum ciclo'}</strong>
+        </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
