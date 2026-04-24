@@ -1,4 +1,4 @@
-import { RefreshCw, Brain, Flame, Target, Play, Sword, LayoutList, CheckSquare, Activity, Moon } from 'lucide-react';
+import { RefreshCw, Brain, Flame, Target, Play, Sword, LayoutList, CheckSquare, Activity, Moon, Skull } from 'lucide-react';
 import { CHARACTER_CLASSES } from '../lib/rpg';
 import { useStudyStore } from '../store/useStudyStore';
 
@@ -172,13 +172,39 @@ export function Guide() {
           </div>
         </section>
 
-        {/* Section 6: Estatísticas Avançadas */}
+        {/* Section 6: A Maldição da Inatividade */}
+        <section className="bg-red-50 dark:bg-red-950/20 p-8 rounded-3xl border border-red-200 dark:border-red-900/50 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-red-200 dark:bg-red-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 opacity-50 dark:opacity-30" />
+          
+          <div className="flex items-center gap-4 mb-6 relative">
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 rounded-xl flex items-center justify-center shadow-inner">
+              <Skull size={24} />
+            </div>
+            <h2 className="text-xl font-bold text-red-900 dark:text-red-200">6. Maldição da Inatividade</h2>
+          </div>
+          
+          <div className="space-y-4 text-red-800/80 dark:text-red-200/70 text-sm relative">
+            <p>
+              Os deuses do conhecimento recompensam o esforço, mas punem a preguiça. Quando você atinge a elite (<strong>Classe Mestre ou Nível 40+</strong>), o sistema de estudos exige consistência para manter seu posto.
+            </p>
+            <ul className="space-y-2 mt-2 font-medium bg-red-100/50 dark:bg-red-900/20 p-4 rounded-xl border border-red-200/50 dark:border-red-800/30">
+              <li className="flex items-start gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0"></span> <strong>A Tolerância:</strong> Você pode ficar até 3 dias seguidos sem estudar ou revisar nada.</li>
+              <li className="flex items-start gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0"></span> <strong>A Punição:</strong> A partir do 4º dia, você perde <strong>100 XP</strong> por cada dia de inatividade.</li>
+              <li className="flex items-start gap-2"><span className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0"></span> <strong>Queda de Classe:</strong> Se você perder muito XP, pode acabar voltando de nível e caindo de Classe!</li>
+            </ul>
+            <p className="pt-2 font-bold text-red-700 dark:text-red-400">
+              Não abandone sua jornada. O topo é apenas para os consistentes!
+            </p>
+          </div>
+        </section>
+
+        {/* Section 7: Estatísticas Avançadas */}
         <section className="bg-white dark:bg-zinc-900 p-8 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-sm relative overflow-hidden">
           <div className="flex items-center gap-4 mb-6">
             <div className="w-12 h-12 bg-fuchsia-100 dark:bg-fuchsia-500/15 text-fuchsia-600 dark:text-fuchsia-300 rounded-xl flex items-center justify-center">
               <Activity size={24} />
             </div>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">6. Estatísticas & Modo Escuro</h2>
+            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">7. Estatísticas & Modo Escuro</h2>
           </div>
           
           <div className="space-y-4 text-zinc-600 dark:text-zinc-300 text-sm">
