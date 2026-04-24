@@ -13,6 +13,7 @@ import { supabase } from './lib/supabase';
 import { cn } from './lib/utils';
 import { OnboardingTour } from './components/OnboardingTour';
 import { LevelUpModal } from './components/LevelUpModal';
+import { DecayAlertModal } from './components/DecayAlertModal';
 import { applyTheme, getPreferredTheme, setStoredTheme, type Theme } from './lib/theme';
 
 function Layout({ children }: { children: React.ReactNode }) {
@@ -50,9 +51,10 @@ function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col transition-colors">
       <OnboardingTour />
       <LevelUpModal />
+      <DecayAlertModal />
       <header className="bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h1 className="text-xl font-bold text-violet-600">Ciclos XP</h1>

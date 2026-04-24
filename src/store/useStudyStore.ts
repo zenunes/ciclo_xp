@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { addHours, formatISO, isYesterday, isToday, parseISO } from 'date-fns';
+import { addHours, formatISO, isYesterday, isToday, parseISO, differenceInDays, startOfDay } from 'date-fns';
 import { supabase } from '../lib/supabase';
 
 export interface Subject {
@@ -42,10 +42,18 @@ interface StudyState {
     level: number;
     currentStreak: number;
     lastStudyDate: string | null;
+    lastDecayDate: string | null;
     hasSeenTutorial: boolean;
   };
   levelUpData: {
     show: boolean;
+    oldLevel: number;
+    newLevel: number;
+  } | null;
+  decayAlertData: {
+    show: boolean;
+    lostXp: number;
+    daysInactive: number;
     oldLevel: number;
     newLevel: number;
   } | null;
@@ -80,6 +88,7 @@ interface StudyState {
   setHasSeenTutorial: (value: boolean) => Promise<void>;
   setForceTour: (value: boolean) => void;
   closeLevelUpModal: () => void;
+  closeDecayAlert: () => void;
 }
 
 const calculateLevel = (xp: number) => Math.floor(Math.sqrt(xp / 100)) + 1;
@@ -206,9 +215,11 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     level: 1,
     currentStreak: 0,
     lastStudyDate: null,
+    lastDecayDate: null,
     hasSeenTutorial: false,
   },
   levelUpData: null,
+  decayAlertData: null,
   cycles: [],
   selectedCycleId: null,
   cycle: {
@@ -280,14 +291,63 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
         completed: r.completed,
       })) || [];
 
+      let { xp, level, current_streak, last_study_date, has_seen_tutorial, last_decay_date } = profileRes.data;
+      let decayAlertData = null;
+
+      // Lógica de Decaimento de XP (XP Decay)
+      if (level >= 40 && last_study_date) {
+        const today = startOfDay(new Date());
+        const lastStudy = startOfDay(parseISO(last_study_date));
+        const daysInactive = differenceInDays(today, lastStudy);
+
+        if (daysInactive > 3) {
+          const lastDecay = last_decay_date ? startOfDay(parseISO(last_decay_date)) : lastStudy;
+          const daysSinceLastDecay = differenceInDays(today, lastDecay);
+
+          let daysToPenalize = 0;
+          if (!last_decay_date || lastDecay <= lastStudy) {
+            // Ainda não sofreu decaimento nesse período de inatividade
+            daysToPenalize = daysInactive - 3;
+          } else {
+            // Já sofreu decaimento antes, penaliza apenas os novos dias
+            daysToPenalize = daysSinceLastDecay;
+          }
+
+          if (daysToPenalize > 0) {
+            const lostXp = daysToPenalize * 100;
+            const oldLevel = level;
+            
+            xp = Math.max(0, xp - lostXp);
+            level = calculateLevel(xp);
+            last_decay_date = formatISO(new Date(), { representation: 'date' });
+            
+            await supabase.from('profiles').update({
+              xp,
+              level,
+              last_decay_date
+            }).eq('id', user.id);
+
+            decayAlertData = {
+              show: true,
+              lostXp,
+              daysInactive,
+              oldLevel,
+              newLevel: level
+            };
+          }
+        }
+      }
+
       set({
         user: { 
-          xp: profileRes.data?.xp || 0, 
-          level: profileRes.data?.level || 1,
-          currentStreak: profileRes.data?.current_streak || 0,
-          lastStudyDate: profileRes.data?.last_study_date || null,
-          hasSeenTutorial: profileRes.data?.has_seen_tutorial || false,
+          xp: xp || 0, 
+          level: level || 1,
+          currentStreak: current_streak || 0,
+          lastStudyDate: last_study_date || null,
+          lastDecayDate: last_decay_date || null,
+          hasSeenTutorial: has_seen_tutorial || false,
         },
+        decayAlertData,
         cycles: formattedCycles,
         selectedCycleId,
         cycle: { 
@@ -807,4 +867,5 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
   },
   setForceTour: (value: boolean) => set({ forceTour: value }),
   closeLevelUpModal: () => set({ levelUpData: null }),
+  closeDecayAlert: () => set({ decayAlertData: null }),
 }));
