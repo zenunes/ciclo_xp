@@ -80,8 +80,9 @@ interface StudyState {
   addSubject: (subject: Omit<Subject, 'id' | 'cycleId'>) => Promise<void>;
   removeSubject: (id: string) => Promise<void>;
   updateSubject: (id: string, subject: Partial<Subject>) => Promise<void>;
-  startCycle: () => void;
+  startCycle: (startFromSubjectId?: string) => void;
   stopCycle: () => void;
+  jumpToSubject: (subjectId: string) => void;
   postponeSubject: () => void;
   completeSession: (topic: string, durationMinutes: number) => Promise<void>;
   completeReview: (id: string, difficulty: 'easy' | 'medium' | 'hard') => Promise<void>;
@@ -558,21 +559,27 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
     }
   },
 
-  startCycle: () =>
+  startCycle: (startFromSubjectId) =>
     set((state) => {
       if (!state.selectedCycleId) return state;
       const activeCycle = state.cycles.find(c => c.id === state.selectedCycleId);
       if (!activeCycle) return state;
 
       const queue = generateQueue(activeCycle.subjects);
-      saveCycleState(true, state.selectedCycleId, queue, 0);
+      let startIndex = 0;
+      if (startFromSubjectId) {
+        const idx = queue.findIndex((id) => id === startFromSubjectId);
+        if (idx >= 0) startIndex = idx;
+      }
+
+      saveCycleState(true, state.selectedCycleId, queue, startIndex);
       return {
         cycle: {
           ...state.cycle,
           isActive: true,
           activeCycleId: state.selectedCycleId,
           queue,
-          currentIndex: 0,
+          currentIndex: startIndex,
         },
       };
     }),
@@ -587,6 +594,26 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
           activeCycleId: null,
           currentIndex: 0,
           queue: [],
+        },
+      };
+    }),
+
+  jumpToSubject: (subjectId) =>
+    set((state) => {
+      if (!state.cycle.isActive || !state.cycle.activeCycleId || state.cycle.queue.length === 0) return state;
+
+      const afterCurrentIdx = state.cycle.queue.findIndex((id, idx) => idx >= state.cycle.currentIndex && id === subjectId);
+      const fallbackIdx = state.cycle.queue.findIndex((id) => id === subjectId);
+      const nextIndex = afterCurrentIdx >= 0 ? afterCurrentIdx : fallbackIdx;
+
+      if (nextIndex < 0) return state;
+
+      saveCycleState(true, state.cycle.activeCycleId, state.cycle.queue, nextIndex);
+
+      return {
+        cycle: {
+          ...state.cycle,
+          currentIndex: nextIndex,
         },
       };
     }),
