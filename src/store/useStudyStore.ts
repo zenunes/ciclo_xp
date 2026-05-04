@@ -196,18 +196,59 @@ const generateQueue = (subjects: Subject[]): string[] => {
   return queue;
 };
 
-const loadCycleState = () => {
+type PersistedCycleProgress = { queue: string[]; currentIndex: number };
+type PersistedCycleState = {
+  isActive: boolean;
+  activeCycleId: string | null;
+  queue: string[];
+  currentIndex: number;
+  perCycle: Record<string, PersistedCycleProgress>;
+};
+
+const normalizeCycleState = (raw: any): PersistedCycleState => {
+  const perCycle = typeof raw?.perCycle === 'object' && raw?.perCycle ? raw.perCycle : {};
+  return {
+    isActive: Boolean(raw?.isActive),
+    activeCycleId: raw?.activeCycleId ?? null,
+    queue: Array.isArray(raw?.queue) ? raw.queue : [],
+    currentIndex: typeof raw?.currentIndex === 'number' ? raw.currentIndex : 0,
+    perCycle,
+  };
+};
+
+const loadCycleState = (): PersistedCycleState | null => {
   try {
     const saved = localStorage.getItem('ciclos_xp_cycle_state');
-    if (saved) return JSON.parse(saved);
+    if (!saved) return null;
+    return normalizeCycleState(JSON.parse(saved));
   } catch (e) {
-    // Ignora erro
+    return null;
   }
-  return null;
+};
+
+const updateCycleState = (patch: Partial<PersistedCycleState>) => {
+  const prev: PersistedCycleState =
+    loadCycleState() ?? { isActive: false, activeCycleId: null, queue: [], currentIndex: 0, perCycle: {} };
+  const next: PersistedCycleState = {
+    ...prev,
+    ...patch,
+    perCycle: { ...prev.perCycle, ...(patch.perCycle || {}) },
+  };
+  localStorage.setItem('ciclos_xp_cycle_state', JSON.stringify(next));
+  return next;
 };
 
 const saveCycleState = (isActive: boolean, activeCycleId: string | null, queue: string[], currentIndex: number) => {
-  localStorage.setItem('ciclos_xp_cycle_state', JSON.stringify({ isActive, activeCycleId, queue, currentIndex }));
+  updateCycleState({ isActive, activeCycleId, queue, currentIndex });
+};
+
+const saveCycleProgress = (cycleId: string, queue: string[], currentIndex: number) => {
+  updateCycleState({ perCycle: { [cycleId]: { queue, currentIndex } } });
+};
+
+const loadCycleProgress = (cycleId: string): PersistedCycleProgress | null => {
+  const saved = loadCycleState();
+  return saved?.perCycle?.[cycleId] ?? null;
 };
 
 export const useStudyStore = create<StudyState>()((set, get) => ({
@@ -565,14 +606,23 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
       const activeCycle = state.cycles.find(c => c.id === state.selectedCycleId);
       if (!activeCycle) return state;
 
-      const queue = generateQueue(activeCycle.subjects);
-      let startIndex = 0;
+      const savedProgress = loadCycleProgress(state.selectedCycleId);
+      const subjectIds = new Set(activeCycle.subjects.map((s) => s.id));
+
+      let queue = savedProgress?.queue ?? [];
+      if (queue.length === 0 || !queue.every((id) => subjectIds.has(id))) {
+        queue = generateQueue(activeCycle.subjects);
+      }
+
+      let startIndex = savedProgress?.currentIndex ?? 0;
       if (startFromSubjectId) {
         const idx = queue.findIndex((id) => id === startFromSubjectId);
         if (idx >= 0) startIndex = idx;
       }
+      if (startIndex < 0 || startIndex >= queue.length) startIndex = 0;
 
       saveCycleState(true, state.selectedCycleId, queue, startIndex);
+      saveCycleProgress(state.selectedCycleId, queue, startIndex);
       return {
         cycle: {
           ...state.cycle,
@@ -609,6 +659,7 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
       if (nextIndex < 0) return state;
 
       saveCycleState(true, state.cycle.activeCycleId, state.cycle.queue, nextIndex);
+      saveCycleProgress(state.cycle.activeCycleId, state.cycle.queue, nextIndex);
 
       return {
         cycle: {
@@ -626,6 +677,9 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
         queue.push(currentSubjectId);
         
         saveCycleState(state.cycle.isActive, state.cycle.activeCycleId, queue, state.cycle.currentIndex);
+        if (state.cycle.activeCycleId) {
+          saveCycleProgress(state.cycle.activeCycleId, queue, state.cycle.currentIndex);
+        }
         
         return {
           cycle: {
@@ -718,6 +772,9 @@ export const useStudyStore = create<StudyState>()((set, get) => ({
 
     const nextIndex = (state.cycle.currentIndex + 1) % state.cycle.queue.length;
     saveCycleState(state.cycle.isActive, state.cycle.activeCycleId, state.cycle.queue, nextIndex);
+    if (state.cycle.activeCycleId) {
+      saveCycleProgress(state.cycle.activeCycleId, state.cycle.queue, nextIndex);
+    }
     
     const didLevelUp = newLevel > state.user.level;
 
