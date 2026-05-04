@@ -16,6 +16,11 @@ export function Dashboard() {
   
   const nextSubjectId = cycle.queue[cycle.currentIndex];
   const nextSubject = activeCycle?.subjects.find(s => s.id === nextSubjectId);
+  const cycleTotal = cycle.queue.length;
+  const cyclePosition = cycleTotal > 0 ? cycle.currentIndex + 1 : 0;
+  const cycleRatio = cycleTotal > 0 ? cyclePosition / cycleTotal : 0;
+  const cycleStage = cycleRatio <= 0.34 ? 'Início' : cycleRatio <= 0.67 ? 'Meio' : 'Fim';
+  const cyclePercent = Math.round(cycleRatio * 100);
   const pendingReviews = reviews.filter((r) => !r.completed);
   const urgentReviews = pendingReviews.filter((r) => isPast(parseISO(r.dueDate)));
 
@@ -169,6 +174,21 @@ export function Dashboard() {
                     </span>
                   )}
                 </p>
+
+                {cycleTotal > 0 && (
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between text-xs font-bold text-zinc-600 dark:text-zinc-300 mb-2">
+                      <span>{cycleStage} do Ciclo</span>
+                      <span>Bloco {cyclePosition} de {cycleTotal} ({cyclePercent}%)</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-zinc-200/80 dark:bg-zinc-800 overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${cyclePercent}%`, backgroundColor: nextSubject.color }}
+                      />
+                    </div>
+                  </div>
+                )}
                 
                 <button
                   onClick={() => navigate('/session')}

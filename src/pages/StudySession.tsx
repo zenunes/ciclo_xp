@@ -140,6 +140,12 @@ export function StudySession() {
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
+  const cycleTotal = cycle.queue.length;
+  const cyclePosition = cycleTotal > 0 ? cycle.currentIndex + 1 : 0;
+  const cycleRatio = cycleTotal > 0 ? cyclePosition / cycleTotal : 0;
+  const cycleStage = cycleRatio <= 0.34 ? 'Início' : cycleRatio <= 0.67 ? 'Meio' : 'Fim';
+  const cyclePercent = Math.round(cycleRatio * 100);
+
   const handleComplete = (e: React.FormEvent) => {
     e.preventDefault();
     if (!topic.trim()) return;
@@ -196,6 +202,20 @@ export function StudySession() {
                 Disciplina Atual
               </span>
               <h1 className="text-4xl md:text-5xl font-black text-zinc-900 dark:text-zinc-100">{currentSubject.name}</h1>
+              {cycleTotal > 0 && (
+                <div className="mt-6 w-full max-w-md mx-auto">
+                  <div className="flex items-center justify-between text-xs font-bold text-zinc-600 dark:text-zinc-300 mb-2">
+                    <span>{cycleStage} do Ciclo</span>
+                    <span>Bloco {cyclePosition} de {cycleTotal} ({cyclePercent}%)</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-zinc-200/80 dark:bg-zinc-800 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${cyclePercent}%`, backgroundColor: currentSubject.color }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Circular Timer */}
