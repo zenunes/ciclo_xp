@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStudyStore } from '../store/useStudyStore';
-import { Plus, Trash2, Clock, Check, X, Edit2, LayoutList, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, Clock, Check, X, Edit2, LayoutList, CheckCircle2, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '../lib/utils';
 
@@ -19,7 +19,7 @@ const COLORS = [
 ];
 
 export function CycleConfig() {
-  const { cycle, cycles, selectedCycleId, createCycle, updateCycle, deleteCycle, selectCycle, addSubject, removeSubject, updateSubject, startCycle, stopCycle } = useStudyStore();
+  const { cycle, cycles, selectedCycleId, createCycle, updateCycle, deleteCycle, selectCycle, addSubject, removeSubject, updateSubject, startCycle, stopCycle, jumpToSubject } = useStudyStore();
   const navigate = useNavigate();
   const [isAdding, setIsAdding] = useState(false);
   const [isAddingCycle, setIsAddingCycle] = useState(false);
@@ -41,14 +41,29 @@ export function CycleConfig() {
 
   const handleStartCycle = () => {
     startCycle();
-    localStorage.removeItem('ciclos_xp_current_timer'); // Clear timer when starting new cycle
+    localStorage.removeItem('ciclos_xp_timer_state');
+    localStorage.removeItem('ciclos_xp_current_timer');
     navigate('/session');
   };
 
   const handleStopCycle = () => {
     stopCycle();
-    localStorage.removeItem('ciclos_xp_current_timer'); // Clear timer when stopping
+    localStorage.removeItem('ciclos_xp_timer_state');
+    localStorage.removeItem('ciclos_xp_current_timer');
     navigate('/');
+  };
+
+  const handleStartFromSubject = (subjectId: string) => {
+    if (cycle.isActive && cycle.activeCycleId === selectedCycleId) {
+      jumpToSubject(subjectId);
+      navigate('/session');
+      return;
+    }
+
+    startCycle(subjectId);
+    localStorage.removeItem('ciclos_xp_timer_state');
+    localStorage.removeItem('ciclos_xp_current_timer');
+    navigate('/session');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -418,6 +433,13 @@ export function CycleConfig() {
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => handleStartFromSubject(subject.id)}
+                  className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-500/25 hover:text-emerald-700 dark:hover:text-emerald-200 transition-colors opacity-100 md:opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  title={cycle.isActive && cycle.activeCycleId === selectedCycleId ? 'Estudar esta disciplina agora' : 'Iniciar ciclo por esta disciplina'}
+                >
+                  <Play size={20} fill="currentColor" />
+                </button>
                 <button
                   onClick={() => handleEdit(subject)}
                   className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-500/15 text-violet-500 dark:text-violet-300 flex items-center justify-center hover:bg-violet-100 dark:hover:bg-violet-500/25 hover:text-violet-600 dark:hover:text-violet-200 transition-colors opacity-100 md:opacity-0 group-hover:opacity-100 focus:opacity-100"
